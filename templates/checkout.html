@@ -17,20 +17,22 @@
           <div style="margin-bottom:1rem;">
             <label class="form-label">Full Delivery Address *</label>
             <textarea name="delivery_address" class="form-control" rows="3"
-                      placeholder="House/Flat No., Street, Area, City, PIN code..."
-                      required>{% if user.default_address %}{{ user.default_address }}{% endif %}</textarea>
+              placeholder="House/Flat No., Street, Area, City, PIN code..."
+              required>{% if user.default_address %}{{ user.default_address }}{% endif %}</textarea>
           </div>
           <div>
-            <label class="form-label">Special Note <span style="font-weight:400;color:#6c757d;">(optional)</span></label>
+            <label class="form-label">Special Note <span
+                style="font-weight:400;color:#6c757d;">(optional)</span></label>
             <textarea name="special_note" class="form-control" rows="2"
-                      placeholder="e.g. Deliver to ground floor, ring bell twice..."></textarea>
+              placeholder="e.g. Deliver to ground floor, ring bell twice..."></textarea>
           </div>
         </div>
 
         <!-- Payment Info -->
         <div class="checkout-card">
           <h5>💳 Payment Method</h5>
-          <p style="color:#6c757d;font-size:0.9rem;margin-bottom:0.75rem;">You will be redirected to our secure payment gateway after placing the order. We support:</p>
+          <p style="color:#6c757d;font-size:0.9rem;margin-bottom:0.75rem;">You will be redirected to our secure payment
+            gateway after placing the order. We support:</p>
           <div class="payment-icons">
             <span class="payment-icon">UPI</span>
             <span class="payment-icon">Credit Card</span>
@@ -50,7 +52,8 @@
 
         <!-- Item list -->
         {% for item in cart.items %}
-        <div style="display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.88rem;border-bottom:1px solid #f0e8de;">
+        <div
+          style="display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.88rem;border-bottom:1px solid #f0e8de;">
           <span style="flex:1;">{{ item.name }} × {{ item.quantity }}</span>
           <span style="font-weight:700;">₹{{ item.total_price|default:item.unit_price }}</span>
         </div>
@@ -59,15 +62,19 @@
         <div style="margin-top:0.75rem;">
           <div class="summary-line"><span>Subtotal</span><span>₹{{ cart.subtotal|default:"0.00" }}</span></div>
           {% if cart.tax %}<div class="summary-line"><span>Tax</span><span>₹{{ cart.tax }}</span></div>{% endif %}
-          {% if cart.discount %}<div class="summary-line" style="color:#2e7d32;"><span>Discount</span><span>−₹{{ cart.discount }}</span></div>{% endif %}
-          <div class="summary-line total"><span>Total</span><span>₹{{ cart.total|default:cart.subtotal|default:"0.00" }}</span></div>
+          {% if cart.discount %}<div class="summary-line" style="color:#2e7d32;"><span>Discount</span><span>−₹{{
+              cart.discount }}</span></div>{% endif %}
+          <div class="summary-line total"><span>Total</span><span>₹{{ cart.total|default:cart.subtotal|default:"0.00"
+              }}</span></div>
         </div>
 
         <button type="submit" class="btn-primary-wtf" style="margin-top:1.2rem;font-size:1rem;">
           Place Order &amp; Pay →
         </button>
 
-        <a href="{% url 'cart' %}" style="display:block;text-align:center;margin-top:0.75rem;font-size:0.85rem;color:#6c757d;font-weight:600;">← Edit Cart</a>
+        <a href="{% url 'cart' %}"
+          style="display:block;text-align:center;margin-top:0.75rem;font-size:0.85rem;color:#6c757d;font-weight:600;">←
+          Edit Cart</a>
       </div>
 
     </div>

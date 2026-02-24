@@ -14,6 +14,7 @@
 <body class="{% block body_class %}{% endblock %}">
 
   <!-- ── Navbar ──────────────────────────────────────────────── -->
+  {% block navbar %}
   <nav class="wtf-navbar">
     <div class="container-wtf" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
       <a href="{% url 'menu' %}" class="navbar-brand" style="text-decoration:none;">
@@ -46,6 +47,7 @@
       </div>
     </div>
   </nav>
+  {% endblock navbar %}
 
   <main class="wtf-main-content">
     <!-- ── Django Messages ──────────────────────────────────────── -->
@@ -65,17 +67,22 @@
     {% block content %}{% endblock %}
   </main>
 
-  {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' %}
-    <a href="{% url 'cart' %}" class="cart-badge-btn floating-cart-btn" aria-label="Open cart">
-      🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else %}0 Items{% endif %}</span>
-      <span class="badge-count cart-badge-count" {% if not cart_count %}style="display:none;"{% endif %}>{{ cart_count|default:0 }}</span>
-    </a>
+  {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and
+  request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' %}
+  <a href="{% url 'cart' %}" class="cart-badge-btn floating-cart-btn" aria-label="Open cart">
+    🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else
+      %}0 Items{% endif %}</span>
+    <span class="badge-count cart-badge-count" {% if not cart_count %}style="display:none;" {% endif %}>{{
+      cart_count|default:0 }}</span>
+  </a>
   {% endif %}
 
   <!-- ── Footer ──────────────────────────────────────────────── -->
+  {% block footer %}
   <footer class="wtf-footer">
     <strong>Way To Food</strong> &nbsp;·&nbsp; All rights reserved &copy; 2026 &nbsp;·&nbsp; B.Tech. Project
   </footer>
+  {% endblock footer %}
 
   {% load static %}
   <script src="{% static 'js/wtf.js' %}"></script>

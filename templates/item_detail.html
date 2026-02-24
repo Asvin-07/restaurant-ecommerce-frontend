@@ -3,34 +3,44 @@
 {% block title %}{{ item.name }}{% endblock %}
 {% block content %}
 <div class="container-wtf page-section" style="max-width:900px;">
-  <a href="{% url 'menu' %}" style="font-weight:700;font-size:0.9rem;color:#C0392B;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;">← Back to Menu</a>
+  <a href="{% url 'menu' %}"
+    style="font-weight:700;font-size:0.9rem;color:#C0392B;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;">←
+    Back to Menu</a>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
 
     <!-- Image -->
     <div>
       {% if item.image %}
-      <img src="{{ item.image }}" alt="{{ item.name }}" style="width:100%;border-radius:16px;object-fit:cover;max-height:380px;"
-           onerror="this.style.background='linear-gradient(135deg,#f5e6d3,#fdf0e4)';this.src='';">
+      <img src="{{ item.image }}" alt="{{ item.name }}"
+        style="width:100%;border-radius:16px;object-fit:cover;max-height:380px;"
+        onerror="this.style.background='linear-gradient(135deg,#f5e6d3,#fdf0e4)';this.src='';">
       {% else %}
-      <div style="width:100%;height:300px;border-radius:16px;background:linear-gradient(135deg,#f5e6d3,#fce8cc);display:flex;align-items:center;justify-content:center;font-size:5rem;">🍽️</div>
+      <div
+        style="width:100%;height:300px;border-radius:16px;background:linear-gradient(135deg,#f5e6d3,#fce8cc);display:flex;align-items:center;justify-content:center;font-size:5rem;">
+        🍽️</div>
       {% endif %}
     </div>
 
     <!-- Details + Add form -->
     <div>
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
-        {% if item.is_veg %}<span class="veg-badge"></span>{% elif item.is_veg is False %}<span class="nveg-badge"></span>{% endif %}
-        <span style="font-size:0.8rem;color:#E67E22;font-weight:700;text-transform:uppercase;">{{ item.category_name }}</span>
+        {% if item.is_veg %}<span class="veg-badge"></span>{% elif item.is_veg is False %}<span
+          class="nveg-badge"></span>{% endif %}
+        <span style="font-size:0.8rem;color:#E67E22;font-weight:700;text-transform:uppercase;">{{ item.category_name
+          }}</span>
       </div>
 
-      <h1 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin-bottom:0.5rem;">{{ item.name }}</h1>
+      <h1 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin-bottom:0.5rem;">{{ item.name
+        }}</h1>
 
       {% if item.rating %}
-      <div style="font-size:0.9rem;color:#6c757d;margin-bottom:0.75rem;">⭐ {{ item.rating }} {% if item.review_count %}({{ item.review_count }} reviews){% endif %}</div>
+      <div style="font-size:0.9rem;color:#6c757d;margin-bottom:0.75rem;">⭐ {{ item.rating }} {% if item.review_count
+        %}({{ item.review_count }} reviews){% endif %}</div>
       {% endif %}
 
-      <p style="color:#6c757d;line-height:1.7;margin-bottom:1.5rem;">{{ item.description|default:"A delicious dish prepared fresh with the finest ingredients." }}</p>
+      <p style="color:#6c757d;line-height:1.7;margin-bottom:1.5rem;">{{ item.description|default:"A delicious dish
+        prepared fresh with the finest ingredients." }}</p>
 
       <div style="font-size:2rem;font-weight:900;color:#C0392B;margin-bottom:1.5rem;">₹{{ item.price }}</div>
 
@@ -41,14 +51,15 @@
           <label class="form-label">Quantity</label>
           <div style="display:flex;align-items:center;gap:0.75rem;">
             <input type="number" id="detail-qty" name="quantity" value="1" min="1" max="20"
-                   style="width:80px;text-align:center;padding:0.5rem;border:2px solid #e9e0d8;border-radius:8px;font-weight:800;font-size:1rem;">
+              style="width:80px;text-align:center;padding:0.5rem;border:2px solid #e9e0d8;border-radius:8px;font-weight:800;font-size:1rem;">
           </div>
         </div>
 
         <div style="margin-bottom:1.5rem;">
-          <label class="form-label">Special Instructions <span style="font-weight:400;color:#6c757d;">(optional)</span></label>
-          <textarea id="detail-instructions" name="special_instructions" class="form-control"
-                    rows="2" placeholder="e.g. No onion, extra spicy..."></textarea>
+          <label class="form-label">Special Instructions <span
+              style="font-weight:400;color:#6c757d;">(optional)</span></label>
+          <textarea id="detail-instructions" name="special_instructions" class="form-control" rows="2"
+            placeholder="e.g. No onion, extra spicy..."></textarea>
         </div>
 
         <button type="submit" class="btn-primary-wtf" style="font-size:1.05rem;">🛒 Add to Cart</button>
@@ -64,11 +75,11 @@
 
 {% block extra_js %}
 <script>
-// Qty input validation
-document.getElementById('detail-qty')?.addEventListener('change', function() {
-  if (this.value < 1) this.value = 1;
-  if (this.value > 20) this.value = 20;
-});
+  // Qty input validation
+  document.getElementById('detail-qty')?.addEventListener('change', function () {
+    if (this.value < 1) this.value = 1;
+    if (this.value > 20) this.value = 20;
+  });
 </script>
 {% endblock %}
 {% endblock %}

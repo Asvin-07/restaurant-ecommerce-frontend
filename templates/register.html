@@ -1,28 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register — Way To Food</title>
-  {% load static %}
-  <link rel="stylesheet" href="{% static 'css/wtf.css' %}">
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
 <div class="auth-wrapper">
   <div class="auth-card" style="max-width:480px;">
     <div class="auth-card__header">
       <div class="brand-logo">WTF</div>
       <h4>Create Your Account</h4>
-      <p style="opacity:0.8;font-size:0.88rem;margin:0.5rem 0 0;color:rgba(255,255,255,0.85);">Join thousands of happy customers</p>
+      <p style="opacity:0.8;font-size:0.88rem;margin:0.5rem 0 0;color:rgba(255,255,255,0.85);">
+        Join thousands of happy customers
+      </p>
     </div>
 
     <div class="auth-card__body">
       {% if messages %}
-        {% for msg in messages %}
-        <div class="alert-wtf {% if msg.tags == 'error' %}error{% elif msg.tags == 'success' %}success{% else %}warning{% endif %}">
-          {{ msg }}
-        </div>
-        {% endfor %}
+      {% for msg in messages %}
+      <div
+        class="alert-wtf {% if msg.tags == 'error' %}error{% elif msg.tags == 'success' %}success{% else %}warning{% endif %}">
+        {{ msg }}
+      </div>
+      {% endfor %}
       {% endif %}
 
       <form method="POST" action="{% url 'register' %}">
@@ -30,22 +34,26 @@
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Full Name</label>
-          <input type="text" name="name" class="form-control" placeholder="Your full name" value="{{ form_data.name|default:'' }}" required>
+          <input type="text" name="name" class="form-control" placeholder="Your full name"
+            value="{{ form_data.name|default:'' }}" required>
         </div>
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Mobile Number</label>
-          <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number" value="{{ form_data.phone|default:'' }}" maxlength="15" required>
+          <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number"
+            value="{{ form_data.phone|default:'' }}" maxlength="15" required>
         </div>
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Email Address</label>
-          <input type="email" name="email" class="form-control" placeholder="you@example.com" value="{{ form_data.email|default:'' }}" required>
+          <input type="email" name="email" class="form-control" placeholder="you@example.com"
+            value="{{ form_data.email|default:'' }}" required>
         </div>
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required minlength="6">
+          <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required
+            minlength="6">
         </div>
 
         <div style="margin-bottom:1.5rem;">
@@ -58,11 +66,9 @@
     </div>
 
     <div class="auth-card__footer">
-      Already have an account? <a href="{% url 'login' %}" style="font-weight:800;color:#C0392B;">Sign In</a>
+      Already have an account?
+      <a href="{% url 'login' %}" style="font-weight:800;color:#C0392B;">Sign In</a>
     </div>
   </div>
 </div>
-{% load static %}
-<script src="{% static 'js/wtf.js' %}"></script>
-</body>
-</html>
+{% endblock %}
