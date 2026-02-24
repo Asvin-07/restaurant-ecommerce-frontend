@@ -108,5 +108,6 @@ LOGGING = {
     },
 }
 
-# ─── Demo Mode ─────────────────────────────────────────────────
-DEMO_MODE = True
+# ─── Demo Mode ─────────────────────────────────────────────
+# Set DEMO_MODE=False in environment when real backend is ready
+DEMO_MODE = os.environ.get('DEMO_MODE', 'True') == 'True'
