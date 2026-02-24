@@ -54,8 +54,8 @@ Restaurant_BTP/
 │   ├── order_detail.html
 │   └── profile.html
 ├── static/
-│   ├── css/wtf.css        ← All custom styles
-│   └── js/wtf.js          ← AJAX cart logic, toasts, interactions
+│   ├── css/styles.css        ← All custom styles
+│   └── js/main.js          ← AJAX cart logic, toasts, interactions
 └── restaurant_core/
     └── settings.py        ← API_BASE_URL, session config, static files
 ```
@@ -116,7 +116,7 @@ Tokens are stored in Django sessions (server-side, secure).
 - **Font**: Playfair Display (headings) + Nunito (body)
 - **Colors**: Crimson red `#C0392B` + Saffron gold `#E67E22` on cream `#fdf6ee`
 - **Mobile-first**: Fully responsive grid-based layout
-- All styles in `static/css/wtf.css` — no framework dependency beyond Google Fonts
+- All styles in `static/css/styles.css` — no framework dependency beyond Google Fonts
 
 ---
 

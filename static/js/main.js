@@ -1,5 +1,5 @@
 /**
- * wtf.js — Way To Food Frontend JavaScript
+ * main.js — Way To Food Frontend JavaScript
  * Handles: AJAX cart operations, toast notifications, UI interactions
  * No business logic — only UI interaction and API call coordination
  */
