@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Your Cart{% endblock %}
+{% block body_class %}cart-page{% endblock %}
+{% block content %}
+<div class="container-wtf page-section">
+  <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">🛒 Your Cart</h2>
+
+  {% if cart.items %}
+  <div id="cart-main-section" style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;">
+
+    <!-- Cart Items -->
+    <div>
+      <div id="cart-items-list">
+        {% for item in cart.items %}
+        <div class="cart-item" data-cart-item-id="{{ item.id }}" data-unit-price="{{ item.unit_price }}">
+
+          {% if item.image %}
+          <img src="{{ item.image }}" alt="{{ item.name }}" class="cart-item__img"
+               onerror="this.style.background='linear-gradient(135deg,#f5e6d3,#fdf0e4)';this.src='';">
+          {% else %}
+          <div class="cart-item__img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🍽️</div>
+          {% endif %}
+
+          <div class="cart-item__info">
+            <div class="cart-item__name">{{ item.name }}</div>
+            {% if item.special_instructions %}
+            <div class="cart-item__instructions">📝 {{ item.special_instructions }}</div>
+            {% endif %}
+            <div style="color:#6c757d;font-size:0.8rem;margin-top:0.2rem;">₹{{ item.unit_price }} × <span class="qty-inline-display">{{ item.quantity }}</span></div>
+          </div>
+
+          <!-- Qty Controls -->
+          <div class="qty-ctrl">
+            <button class="qty-btn minus">−</button>
+            <span class="qty-display qty-ctrl-display">{{ item.quantity }}</span>
+            <button class="qty-btn plus">+</button>
+          </div>
+
+          <!-- Item Total -->
+          <div class="cart-item__price">₹{{ item.total_price|default:item.unit_price }}</div>
+
+          <!-- Remove -->
+          <button class="btn-remove" data-cart-item-id="{{ item.id }}" title="Remove item">🗑</button>
+        </div>
+        {% endfor %}
+      </div>
+
+      <a href="{% url 'menu' %}" style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#C0392B;margin-top:1rem;font-size:0.9rem;">← Continue Shopping</a>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary-box">
+      <h5>Order Summary</h5>
+
+      <div class="summary-line">
+        <span>Subtotal</span>
+        <span id="summary-subtotal">₹{{ cart.subtotal|default:"0.00" }}</span>
+      </div>
+      {% if cart.tax %}
+      <div class="summary-line">
+        <span>Taxes &amp; Fees</span>
+        <span id="summary-tax">₹{{ cart.tax }}</span>
+      </div>
+      {% else %}
+      <div class="summary-line" style="color:#6c757d;font-size:0.82rem;">
+        <span>Taxes &amp; Fees</span>
+        <span id="summary-tax">Calculated at checkout</span>
+      </div>
+      {% endif %}
+
+      {% if cart.discount %}
+      <div class="summary-line" style="color:#2e7d32;">
+        <span>Discount</span>
+        <span>−₹{{ cart.discount }}</span>
+      </div>
+      {% endif %}
+
+      <div class="summary-line total">
+        <span>Total</span>
+        <span id="summary-total">₹{{ cart.total|default:cart.subtotal|default:"0.00" }}</span>
+      </div>
+
+      <a href="{% url 'checkout' %}" style="display:block;margin-top:1.2rem;">
+        <button class="btn-primary-wtf" style="font-size:1rem;">Proceed to Checkout →</button>
+      </a>
+
+      <p style="text-align:center;font-size:0.78rem;color:#6c757d;margin-top:0.75rem;">🔒 Secure checkout via payment gateway</p>
+    </div>
+
+  </div>
+
+  <div id="cart-empty" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
+    <span style="font-size:5rem;margin-bottom:1.5rem;">🛒</span>
+    <h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:0.5rem;">Your cart is empty</h3>
+    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and start ordering!</p>
+    <a href="{% url 'menu' %}"><button class="btn-primary-wtf" style="width:auto;padding:0.75rem 2rem;">Browse Menu →</button></a>
+  </div>
+
+  {% else %}
+  <!-- Empty Cart -->
+  <div id="cart-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
+    <span style="font-size:5rem;margin-bottom:1.5rem;">🛒</span>
+    <h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:0.5rem;">Your cart is empty</h3>
+    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and start ordering!</p>
+    <a href="{% url 'menu' %}"><button class="btn-primary-wtf" style="width:auto;padding:0.75rem 2rem;">Browse Menu →</button></a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

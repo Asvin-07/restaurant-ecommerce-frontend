@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Way To Food{% endblock %} — WTF</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/wtf.css' %}">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+  <!-- ── Navbar ──────────────────────────────────────────────── -->
+  <nav class="wtf-navbar">
+    <div class="container-wtf" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+      <a href="{% url 'menu' %}" class="navbar-brand" style="text-decoration:none;">
+        <div style="line-height:1.1;">
+          <span style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#E67E22;">WTF</span>
+          <span class="brand-sub">Way To Food</span>
+        </div>
+      </a>
+
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        {% if user %}
+        <a href="{% url 'menu' %}" class="nav-link"
+          style="font-size:0.85rem;color:rgba(255,255,255,0.8);font-weight:600;">Menu</a>
+        <a href="{% url 'order_history' %}" class="nav-link"
+          style="font-size:0.85rem;color:rgba(255,255,255,0.8);font-weight:600;">My Orders</a>
+        <a href="{% url 'profile' %}" class="nav-link"
+          style="font-size:0.85rem;color:rgba(255,255,255,0.8);font-weight:600;">
+          {% if user.name %}{{ user.name|slice:":1" }}{% else %}👤{% endif %}
+        </a>
+
+        <form action="{% url 'logout' %}" method="post" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit"
+            style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:Nunito,sans-serif;padding:0;">Logout</button>
+        </form>
+        {% else %}
+        <a href="{% url 'login' %}"
+          style="background:#E67E22;color:white;padding:0.45rem 1.2rem;border-radius:50px;font-weight:800;font-size:0.85rem;text-decoration:none;">Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="wtf-main-content">
+    <!-- ── Django Messages ──────────────────────────────────────── -->
+    {% if messages %}
+    <div class="container-wtf" style="padding-top:1rem;">
+      {% for msg in messages %}
+      <div
+        class="alert-wtf wtf-django-alert {% if msg.tags == 'error' %}error{% elif msg.tags == 'success' %}success{% else %}warning{% endif %}">
+        {% if msg.tags == 'error' %}✕{% elif msg.tags == 'success' %}✓{% else %}⚠{% endif %}
+        {{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ── Main Content ─────────────────────────────────────────── -->
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' %}
+    <a href="{% url 'cart' %}" class="cart-badge-btn floating-cart-btn" aria-label="Open cart">
+      🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else %}0 Items{% endif %}</span>
+      <span class="badge-count cart-badge-count" {% if not cart_count %}style="display:none;"{% endif %}>{{ cart_count|default:0 }}</span>
+    </a>
+  {% endif %}
+
+  <!-- ── Footer ──────────────────────────────────────────────── -->
+  <footer class="wtf-footer">
+    <strong>Way To Food</strong> &nbsp;·&nbsp; All rights reserved &copy; 2026 &nbsp;·&nbsp; B.Tech. Project
+  </footer>
+
+  {% load static %}
+  <script src="{% static 'js/wtf.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>

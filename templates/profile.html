@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="container-wtf page-section" style="max-width:600px;">
+  <div style="text-align:center;margin-bottom:2rem;">
+    <div class="profile-avatar">{{ profile.name|slice:":1"|upper|default:"?" }}</div>
+    <h2 style="font-family:'Playfair Display',serif;font-weight:900;">{{ profile.name|default:"Your Profile" }}</h2>
+    <p style="color:#6c757d;">{{ profile.phone }}</p>
+  </div>
+
+  <div class="checkout-card">
+    <h5>Edit Profile</h5>
+    <form method="POST" action="{% url 'profile' %}">
+      {% csrf_token %}
+      <div style="margin-bottom:1rem;">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="name" class="form-control" value="{{ profile.name|default:'' }}" required>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" value="{{ profile.email|default:'' }}">
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label class="form-label">Default Delivery Address</label>
+        <textarea name="default_address" class="form-control" rows="2" placeholder="Your home/default delivery address">{{ profile.default_address|default:'' }}</textarea>
+      </div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <button type="submit" class="btn-primary-wtf" style="flex:1;">Save Changes</button>
+        <a href="{% url 'order_history' %}" style="flex:1;">
+          <button type="button" class="btn-secondary-wtf" style="width:100%;">My Orders</button>
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <div style="text-align:center;margin-top:1.5rem;">
+    <form action="{% url 'logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" style="background:none;border:none;color:#C0392B;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">Logout →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

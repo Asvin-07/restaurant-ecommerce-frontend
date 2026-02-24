@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed{% endblock %}
+{% block content %}
+<div class="container-wtf">
+  <div class="confirmation-wrapper">
+
+    <div class="confirmation-icon success">✓</div>
+    <h2 class="confirmation-title">Order Placed!</h2>
+    <p style="color:#6c757d;text-align:center;max-width:400px;">
+      Your order has been received and is being prepared. You'll receive updates as it progresses.
+    </p>
+
+    <div class="order-info-table">
+      <div class="order-info-row">
+        <span class="label">Order ID</span>
+        <span class="value">#{{ order.id|default:order.order_id }}</span>
+      </div>
+      <div class="order-info-row">
+        <span class="label">Status</span>
+        <span class="status-badge status-{{ order.status|lower|default:'confirmed' }}">{{ order.status|default:"Confirmed" }}</span>
+      </div>
+      <div class="order-info-row">
+        <span class="label">Total Amount</span>
+        <span class="value" style="color:#C0392B;">₹{{ order.total_amount|default:order.total }}</span>
+      </div>
+      {% if order.delivery_address %}
+      <div class="order-info-row">
+        <span class="label">Delivery To</span>
+        <span class="value" style="font-size:0.85rem;max-width:250px;text-align:right;">{{ order.delivery_address }}</span>
+      </div>
+      {% endif %}
+      {% if order.estimated_delivery %}
+      <div class="order-info-row">
+        <span class="label">Estimated Delivery</span>
+        <span class="value">{{ order.estimated_delivery }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1rem;">
+      <a href="{% url 'order_detail' order.id|default:order.order_id %}">
+        <button class="btn-secondary-wtf">View Order Details</button>
+      </a>
+      <a href="{% url 'menu' %}">
+        <button class="btn-primary-wtf" style="width:auto;padding:0.7rem 1.8rem;">Order More →</button>
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Payment {% if payment_status == 'success' %}Successful{% else %}Status{% endif %}{% endblock %}
+{% block content %}
+<div class="container-wtf">
+  <div class="confirmation-wrapper">
+
+    {% if payment_status == 'success' or payment_status == 'paid' %}
+    <div class="confirmation-icon success">✓</div>
+    <h2 class="confirmation-title" style="color:#2e7d32;">Payment Successful!</h2>
+    <p style="color:#6c757d;text-align:center;">Your payment was processed successfully. Your order is confirmed.</p>
+    {% elif payment_status == 'failed' or payment_status == 'failure' %}
+    <div class="confirmation-icon failure">✕</div>
+    <h2 class="confirmation-title" style="color:#C0392B;">Payment Failed</h2>
+    <p style="color:#6c757d;text-align:center;">Your payment could not be processed. Your order has not been charged.</p>
+    {% else %}
+    <div class="confirmation-icon" style="background:#fff8e1;color:#e67e22;">?</div>
+    <h2 class="confirmation-title">Payment Status Unknown</h2>
+    <p style="color:#6c757d;text-align:center;">We're verifying your payment status. Please contact support if you're unsure.</p>
+    {% endif %}
+
+    {% if order_id %}
+    <div class="order-info-table">
+      <div class="order-info-row">
+        <span class="label">Order ID</span>
+        <span class="value">#{{ order_id }}</span>
+      </div>
+      {% if payment_data.payment_id %}
+      <div class="order-info-row">
+        <span class="label">Payment ID</span>
+        <span class="value" style="font-size:0.85rem;">{{ payment_data.payment_id }}</span>
+      </div>
+      {% endif %}
+      <div class="order-info-row">
+        <span class="label">Payment Status</span>
+        <span class="status-badge status-{{ payment_status }}">{{ payment_status|capfirst }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1.5rem;">
+      {% if order_id %}
+      <a href="{% url 'order_detail' order_id %}">
+        <button class="btn-secondary-wtf">View Order</button>
+      </a>
+      {% endif %}
+      {% if payment_status == 'failed' or payment_status == 'failure' %}
+      <a href="{% url 'checkout' %}">
+        <button class="btn-primary-wtf" style="width:auto;padding:0.7rem 1.8rem;">Retry Payment →</button>
+      </a>
+      {% else %}
+      <a href="{% url 'menu' %}">
+        <button class="btn-primary-wtf" style="width:auto;padding:0.7rem 1.8rem;">Back to Menu →</button>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
