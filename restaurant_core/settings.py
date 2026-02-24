@@ -13,6 +13,11 @@ SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     'django-insecure-replace-this-in-production-use-env-variable'
 )
+# Warn clearly if using insecure key
+if 'insecure' in SECRET_KEY:
+    import warnings
+    warnings.warn("Using insecure SECRET_KEY. Set DJANGO_SECRET_KEY environment variable for production.")
+    
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
