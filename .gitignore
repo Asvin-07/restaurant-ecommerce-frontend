@@ -1,7 +1,52 @@
-node_modules/
-.env
+# Python
 __pycache__/
-*.pyc
-db.sqlite3
-.DS_Store
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Django
+*.sqlite3
+*.log
+local_settings.py
+media/
+
+# Environment variables
+.env
+
+# Staticfiles build
+staticfiles/
+
+# Node
+node_modules/
+
+# VS Code
 .vscode/
+
+# Mac / OS
+.DS_Store
+Thumbs.db
+
+# Coverage / testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Migrations cache
+**/migrations/__pycache__/
+
+# Build files
+dist/
+build/
+
+# Editor backups
+*.swp
+*.swo
+
+#Key
+secret_key.txt
+secrets.txt
