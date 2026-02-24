@@ -17,7 +17,8 @@
       </div>
       <div class="order-info-row">
         <span class="label">Status</span>
-        <span class="status-badge status-{{ order.status|lower|default:'confirmed' }}">{{ order.status|default:"Confirmed" }}</span>
+        <span class="status-badge status-{{ order.status|lower|default:'confirmed' }}">{{
+          order.status|default:"Confirmed" }}</span>
       </div>
       <div class="order-info-row">
         <span class="label">Total Amount</span>
@@ -26,7 +27,8 @@
       {% if order.delivery_address %}
       <div class="order-info-row">
         <span class="label">Delivery To</span>
-        <span class="value" style="font-size:0.85rem;max-width:250px;text-align:right;">{{ order.delivery_address }}</span>
+        <span class="value" style="font-size:0.85rem;max-width:250px;text-align:right;">{{ order.delivery_address
+          }}</span>
       </div>
       {% endif %}
       {% if order.estimated_delivery %}
@@ -38,11 +40,13 @@
     </div>
 
     <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1rem;">
-      <a href="{% url 'order_detail' order.id|default:order.order_id %}">
-        <button class="btn-secondary-wtf">View Order Details</button>
+      <a href="{% url 'order_detail' order.id|default:order.order_id %}" class="btn-secondary-wtf"
+        style="display:inline-block; text-decoration:none;">
+        View Order Details
       </a>
-      <a href="{% url 'menu' %}">
-        <button class="btn-primary-wtf" style="width:auto;padding:0.7rem 1.8rem;">Order More →</button>
+      <a href="{% url 'menu' %}" class="btn-primary-wtf"
+        style="display:inline-block; width:auto; padding:0.7rem 1.8rem; text-decoration:none;">
+        Order More →
       </a>
     </div>
 

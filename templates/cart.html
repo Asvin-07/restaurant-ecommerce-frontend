@@ -17,9 +17,10 @@
 
           {% if item.image %}
           <img src="{{ item.image }}" alt="{{ item.name }}" class="cart-item__img"
-               onerror="this.style.background='linear-gradient(135deg,#f5e6d3,#fdf0e4)';this.src='';">
+            onerror="this.style.background='linear-gradient(135deg,#f5e6d3,#fdf0e4)';this.src='';">
           {% else %}
-          <div class="cart-item__img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🍽️</div>
+          <div class="cart-item__img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🍽️
+          </div>
           {% endif %}
 
           <div class="cart-item__info">
@@ -27,7 +28,8 @@
             {% if item.special_instructions %}
             <div class="cart-item__instructions">📝 {{ item.special_instructions }}</div>
             {% endif %}
-            <div style="color:#6c757d;font-size:0.8rem;margin-top:0.2rem;">₹{{ item.unit_price }} × <span class="qty-inline-display">{{ item.quantity }}</span></div>
+            <div style="color:#6c757d;font-size:0.8rem;margin-top:0.2rem;">₹{{ item.unit_price }} × <span
+                class="qty-inline-display">{{ item.quantity }}</span></div>
           </div>
 
           <!-- Qty Controls -->
@@ -46,7 +48,9 @@
         {% endfor %}
       </div>
 
-      <a href="{% url 'menu' %}" style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#C0392B;margin-top:1rem;font-size:0.9rem;">← Continue Shopping</a>
+      <a href="{% url 'menu' %}"
+        style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#C0392B;margin-top:1rem;font-size:0.9rem;">←
+        Continue Shopping</a>
     </div>
 
     <!-- Order Summary -->
@@ -85,25 +89,34 @@
         <button class="btn-primary-wtf" style="font-size:1rem;">Proceed to Checkout →</button>
       </a>
 
-      <p style="text-align:center;font-size:0.78rem;color:#6c757d;margin-top:0.75rem;">🔒 Secure checkout via payment gateway</p>
+      <p style="text-align:center;font-size:0.78rem;color:#6c757d;margin-top:0.75rem;">🔒 Secure checkout via payment
+        gateway</p>
     </div>
 
   </div>
 
-  <div id="cart-empty" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
+  <div id="cart-empty"
+    style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
     <span style="font-size:5rem;margin-bottom:1.5rem;">🛒</span>
     <h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:0.5rem;">Your cart is empty</h3>
-    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and start ordering!</p>
-    <a href="{% url 'menu' %}"><button class="btn-primary-wtf" style="width:auto;padding:0.75rem 2rem;">Browse Menu →</button></a>
+    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and
+      start ordering!</p>
+    <a href="{% url 'menu' %}" class="btn-primary-wtf"
+      style="display:inline-block; width:auto; padding:0.75rem 2rem; text-decoration:none; text-align:center;">Browse
+      Menu →</a>
   </div>
 
   {% else %}
   <!-- Empty Cart -->
-  <div id="cart-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
+  <div id="cart-empty"
+    style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
     <span style="font-size:5rem;margin-bottom:1.5rem;">🛒</span>
     <h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:0.5rem;">Your cart is empty</h3>
-    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and start ordering!</p>
-    <a href="{% url 'menu' %}"><button class="btn-primary-wtf" style="width:auto;padding:0.75rem 2rem;">Browse Menu →</button></a>
+    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and
+      start ordering!</p>
+    <a href="{% url 'menu' %}" class="btn-primary-wtf"
+      style="display:inline-block; width:auto; padding:0.75rem 2rem; text-decoration:none; text-align:center;">Browse
+      Menu →</a>
   </div>
   {% endif %}
 </div>

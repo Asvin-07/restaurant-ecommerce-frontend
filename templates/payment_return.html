@@ -11,11 +11,13 @@
     {% elif payment_status == 'failed' or payment_status == 'failure' %}
     <div class="confirmation-icon failure">✕</div>
     <h2 class="confirmation-title" style="color:#C0392B;">Payment Failed</h2>
-    <p style="color:#6c757d;text-align:center;">Your payment could not be processed. Your order has not been charged.</p>
+    <p style="color:#6c757d;text-align:center;">Your payment could not be processed. Your order has not been charged.
+    </p>
     {% else %}
     <div class="confirmation-icon" style="background:#fff8e1;color:#e67e22;">?</div>
     <h2 class="confirmation-title">Payment Status Unknown</h2>
-    <p style="color:#6c757d;text-align:center;">We're verifying your payment status. Please contact support if you're unsure.</p>
+    <p style="color:#6c757d;text-align:center;">We're verifying your payment status. Please contact support if you're
+      unsure.</p>
     {% endif %}
 
     {% if order_id %}
@@ -39,17 +41,20 @@
 
     <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1.5rem;">
       {% if order_id %}
-      <a href="{% url 'order_detail' order_id %}">
-        <button class="btn-secondary-wtf">View Order</button>
+      <a href="{% url 'order_detail' order_id %}" class="btn-secondary-wtf"
+        style="display:inline-block; text-decoration:none;">
+        View Order
       </a>
       {% endif %}
       {% if payment_status == 'failed' or payment_status == 'failure' %}
-      <a href="{% url 'checkout' %}">
-        <button class="btn-primary-wtf" style="width:auto;padding:0.7rem 1.8rem;">Retry Payment →</button>
+      <a href="{% url 'checkout' %}" class="btn-primary-wtf"
+        style="display:inline-block; width:auto; padding:0.7rem 1.8rem; text-decoration:none;">
+        Retry Payment →
       </a>
       {% else %}
-      <a href="{% url 'menu' %}">
-        <button class="btn-primary-wtf" style="width:auto;padding:0.7rem 1.8rem;">Back to Menu →</button>
+      <a href="{% url 'menu' %}" class="btn-primary-wtf"
+        style="display:inline-block; width:auto; padding:0.7rem 1.8rem; text-decoration:none">
+        Back to Menu →
       </a>
       {% endif %}
     </div>
