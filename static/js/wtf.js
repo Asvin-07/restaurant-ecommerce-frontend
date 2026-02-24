@@ -282,7 +282,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="qty-display" style="font-weight:900;font-size:0.95rem;min-width:24px;text-align:center;">1</span>
             <button class="qty-btn plus" style="width:28px;height:28px;border-radius:6px;border:none;background:#C0392B;color:white;font-weight:900;font-size:1rem;cursor:pointer;">+</button>
           </div>`;
-        addToCart(itemId, 1);
+
+        addToCart(itemId, 1).then(data => {
+          if (!data || !data.ok) {
+            const inlineCtrl = document.querySelector(`.inline-qty-ctrl[data-item-id="${itemId}"]`);
+            if (inlineCtrl) {
+              inlineCtrl.outerHTML = `<button class="btn-add" data-item-id="${itemId}">+ Add</button>`;
+            }
+          }
+        });
         return;
       }
 
@@ -371,7 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (this.classList.contains('minus')) {
         if (qty <= 1) {
-          // Remove immediately for snappy UX, then reconcile with server.
+          // Save exactly where the row was before removing it
+          const parentNode = row.parentNode;
+          const nextSibling = row.nextSibling;
+
           const { removedQty, removedAmount } = optimisticRemoveFromCart(row);
           showToast('Item removed.', 'info');
           removeCartItem(cartItemId).then(data => {
@@ -381,7 +392,13 @@ document.addEventListener('DOMContentLoaded', () => {
               showToast((data && data.error) || 'Could not remove item.', 'error');
               if (removedAmount > 0) applySummaryDelta(removedAmount);
               if (removedQty > 0) applyCartBadgeDelta(removedQty);
-              window.location.reload();
+
+              // Graceful restore instead of page reload
+              if (nextSibling) parentNode.insertBefore(row, nextSibling);
+              else parentNode.appendChild(row);
+
+              document.getElementById('cart-main-section').style.display = 'grid';
+              document.getElementById('cart-empty').style.display = 'none';
             }
           });
           return;
@@ -426,6 +443,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', function () {
       const cartItemId = this.dataset.cartItemId;
       const row = document.querySelector(`[data-cart-item-id="${cartItemId}"]`);
+
+      // Save exactly where the row was before removing it
+      const parentNode = row.parentNode;
+      const nextSibling = row.nextSibling;
+
       const { removedQty, removedAmount } = optimisticRemoveFromCart(row);
       showToast('Item removed from cart.', 'info');
       removeCartItem(cartItemId).then(data => {
@@ -435,7 +457,13 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast((data && data.error) || 'Could not remove item.', 'error');
           if (removedAmount > 0) applySummaryDelta(removedAmount);
           if (removedQty > 0) applyCartBadgeDelta(removedQty);
-          window.location.reload();
+
+          // Graceful restore instead of page reload
+          if (nextSibling) parentNode.insertBefore(row, nextSibling);
+          else parentNode.appendChild(row);
+
+          document.getElementById('cart-main-section').style.display = 'grid';
+          document.getElementById('cart-empty').style.display = 'none';
         }
       });
     });
