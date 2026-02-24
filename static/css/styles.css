@@ -452,6 +452,8 @@ body.cart-page .wtf-main-content {
   padding: 0.65rem 0.9rem;
   font-family: 'Nunito', sans-serif;
   font-size: 0.95rem;
+  width: 100%;
+  display: block;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
