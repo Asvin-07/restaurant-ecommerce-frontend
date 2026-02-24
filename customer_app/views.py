@@ -7,6 +7,7 @@ views.py — Customer-facing views for Way To Food (WTF)
 """
 
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
@@ -52,7 +53,7 @@ def _login_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not _get_token(request):
             messages.warning(request, "Please log in to continue.")
-            return redirect(f"/login/?next={request.path}")
+            return redirect(f"{reverse('login')}?next={request.path}")
         return view_func(request, *args, **kwargs)
     wrapper.__name__ = view_func.__name__
     return wrapper
