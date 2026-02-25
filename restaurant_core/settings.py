@@ -4,8 +4,12 @@ Django settings for restaurant_core (Way To Food — WTF)
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Automatically load environment variables from the .env file
+load_dotenv(BASE_DIR / '.env')
 
 # ─── Security ─────────────────────────────────────────────────
 # IMPORTANT: Replace with a strong secret key and set DEBUG=False in production.
