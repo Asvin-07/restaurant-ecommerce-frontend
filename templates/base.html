@@ -35,7 +35,7 @@
           {% if user.name %}{{ user.name|slice:":1" }}{% else %}👤{% endif %}
         </a>
 
-        <form action="{% url 'logout' %}" method="post" style="margin:0;">
+        <form action="{% url 'logout' %}" method="post" style="margin:0;" data-no-loading>
           {% csrf_token %}
           <button type="submit"
             style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:Nunito,sans-serif;padding:0;">Logout</button>

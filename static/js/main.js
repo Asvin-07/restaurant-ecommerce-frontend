@@ -506,12 +506,34 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutForm.addEventListener('submit', function () {
       const btn = this.querySelector('button[type="submit"]');
       if (btn) {
+        if (btn.disabled) return;
         btn.disabled = true;
         btn.textContent = 'Placing Order...';
         showLoading();
       }
     });
   }
+
+  //Global form double-submission prevention (Auth, Profile, etc.)
+  document.querySelectorAll('form[method="POST"]').forEach(form => {
+    // Skip forms that already have custom submit listeners
+    if (form.id === 'checkout-form' || form.id === 'item-detail-form') return;
+
+    // Skip forms marked as no-loading (e.g. logout)
+    if (form.hasAttribute('data-no-loading')) return;
+
+    form.addEventListener('submit', function () {
+      const btn = this.querySelector('button[type="submit"]');
+      if (btn) {
+        if (btn.disabled) return;
+        btn.disabled = true;
+
+        const originalText = btn.textContent.trim();
+        btn.textContent = originalText + '...';
+        showLoading();
+      }
+    });
+  });
 
   // Auto-dismiss Django messages after 5s
   document.querySelectorAll('.wtf-django-alert').forEach(el => {
