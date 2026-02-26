@@ -50,3 +50,7 @@ build/
 #Key
 secret_key.txt
 secrets.txt
+
+# Postman Collections
+*.postman_collection.json
+*.postman_environment.json
