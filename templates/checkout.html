@@ -5,6 +5,17 @@
 <div class="container-wtf page-section" style="max-width:900px;">
   <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">Checkout</h2>
 
+  <!-- Location warning — only shows if location not set -->
+  <div id="checkout-location-warning"
+    style="display:none; background:#fdecea; border:2px solid #C0392B; border-radius:10px; padding:1rem; margin-bottom:1.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+    <span style="font-size:0.9rem; color:#C0392B; font-weight:700;">📍 Please set your delivery location before placing
+      the order.</span>
+    <button onclick="showLocationPopup()"
+      style="background:#C0392B; color:white; border:none; border-radius:8px; padding:0.4rem 1rem; font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer;">
+      Set Now
+    </button>
+  </div>
+
   <form id="checkout-form" method="POST" action="{% url 'checkout' %}">
     {% csrf_token %}
     <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start;">
@@ -80,4 +91,17 @@
     </div>
   </form>
 </div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const savedLocation = sessionStorage.getItem('wtf_user_location');
+    const warning = document.getElementById('checkout-location-warning');
+    if (!savedLocation && warning) {
+      warning.style.display = 'flex';
+    }
+  });
+</script>
 {% endblock %}
+
+{% endblock content %}
