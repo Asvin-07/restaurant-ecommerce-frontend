@@ -24,6 +24,14 @@
         </div>
       </a>
 
+      <!-- Location pill — clicking opens popup from any page -->
+      <div id="navbar-location" onclick="showLocationPopup()"
+        style="display:none; align-items:center; gap:5px; color:rgba(255,255,255,0.85); font-size:0.8rem; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,0.2); border-radius:50px; padding:0.3rem 0.8rem;">
+        <span>📍</span>
+        <span id="navbar-location-text">Locating...</span>
+        <span style="font-size:0.7rem; opacity:0.7;">▼</span>
+      </div>
+
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         {% if user %}
         <a href="{% url 'menu' %}" class="nav-link"
@@ -48,6 +56,19 @@
     </div>
   </nav>
   {% endblock navbar %}
+
+  <!-- ── Location Reminder Banner (Global) ───────────────── -->
+  {% block location_reminder %}
+  <div id="location-reminder"
+    style="display:none; background:#fff8e1; border-bottom:2px solid #E67E22; padding:0.6rem 1rem; align-items:center; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+    <span style="font-size:0.88rem; color:#6c757d;">📍 Location not set — some items may not be available in your
+      area.</span>
+    <button onclick="showLocationPopup()"
+      style="background:#E67E22; color:white; border:none; border-radius:50px; padding:0.3rem 1rem; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.82rem; cursor:pointer;">
+      Set Location
+    </button>
+  </div>
+  {% endblock location_reminder %}
 
   <main class="wtf-main-content">
     <!-- ── Django Messages ──────────────────────────────────────── -->
@@ -84,7 +105,50 @@
   </footer>
   {% endblock footer %}
 
-  {% load static %}
+  <!-- ── Location Popup (Global) ─────────────────────────── -->
+  <div id="location-overlay"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center;">
+    <div
+      style="background:white; border-radius:16px; padding:2rem; max-width:420px; width:90%; margin:1rem; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+
+      <div style="text-align:center; margin-bottom:1.5rem;">
+        <div style="font-size:3rem; margin-bottom:0.5rem;">📍</div>
+        <h3 style="font-family:'Playfair Display',serif; font-weight:900; margin:0 0 0.4rem;">What's your location?</h3>
+        <p style="color:#6c757d; font-size:0.88rem; margin:0;">We need your location to show relevant menu items and
+          delivery availability.</p>
+      </div>
+
+      <button id="btn-detect-location" onclick="detectLocation()"
+        style="width:100%; background:linear-gradient(135deg,#C0392B,#E67E22); color:white; border:none; border-radius:10px; padding:0.85rem; font-family:'Nunito',sans-serif; font-weight:800; font-size:1rem; cursor:pointer; margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span>📡</span> Use My Current Location
+      </button>
+
+      <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+        <div style="flex:1; height:1px; background:#e9e0d8;"></div>
+        <span style="color:#6c757d; font-size:0.8rem; font-weight:600;">OR</span>
+        <div style="flex:1; height:1px; background:#e9e0d8;"></div>
+      </div>
+
+      <input type="text" id="manual-location-input" placeholder="Enter your area or city..."
+        style="width:100%; border:2px solid #e9e0d8; border-radius:10px; padding:0.7rem 1rem; font-family:'Nunito',sans-serif; font-size:0.95rem; margin-bottom:0.75rem; box-sizing:border-box;">
+
+      <button onclick="saveManualLocation()"
+        style="width:100%; background:white; color:#C0392B; border:2px solid #C0392B; border-radius:10px; padding:0.7rem; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.95rem; cursor:pointer; margin-bottom:1rem;">
+        Confirm Location
+      </button>
+
+      <div style="text-align:center;">
+        <button onclick="skipLocation()"
+          style="background:none; border:none; color:#6c757d; font-size:0.82rem; cursor:pointer; font-family:'Nunito',sans-serif; text-decoration:underline;">
+          Skip for now
+        </button>
+      </div>
+
+      <div id="location-status"
+        style="text-align:center; margin-top:0.75rem; font-size:0.85rem; font-weight:600; min-height:20px;"></div>
+    </div>
+  </div>
+
   <script src="{% static 'js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>

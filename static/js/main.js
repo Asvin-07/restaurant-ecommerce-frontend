@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const input = this.querySelector('input[name="search"]');
       if (input && !input.value.trim()) {
         e.preventDefault();
-        window.location.href = '/menu/';
+        window.location.href = '/';
       }
     });
   }
@@ -543,4 +543,143 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => el.remove(), 500);
     }, 5000);
   });
+  // ── Location startup — runs on every page ──────────────
+  const savedLocation = sessionStorage.getItem('wtf_user_location');
+  const locationSkipped = sessionStorage.getItem('wtf_location_skipped');
+
+  if (savedLocation) {
+    // Restore display only — don't call setLocationDisplay
+    // because that would unnecessarily rewrite sessionStorage
+    const navbarLocation = document.getElementById('navbar-location');
+    const navbarLocationText = document.getElementById('navbar-location-text');
+    if (navbarLocation && navbarLocationText) {
+      navbarLocationText.textContent = savedLocation;
+      navbarLocation.style.display = 'flex';
+    }
+    const reminder = document.getElementById('location-reminder');
+    if (reminder) reminder.style.display = 'none';
+  } else if (locationSkipped) {
+    const reminder = document.getElementById('location-reminder');
+    if (reminder) reminder.style.display = 'flex';
+  } else {
+    // Only auto-popup on home/menu page
+    if (window.location.pathname === '/') {
+      setTimeout(showLocationPopup, 800);
+    }
+  }
 });
+
+// ─── Location Feature ──────────────────────────────────────
+
+function showLocationPopup() {
+  const overlay = document.getElementById('location-overlay');
+  if (!overlay) return;
+  const btn = document.getElementById('btn-detect-location');
+  if (btn) {
+    btn.innerHTML = '<span>📡</span> Use My Current Location';
+    btn.disabled = false;
+  }
+  const status = document.getElementById('location-status');
+  if (status) status.textContent = '';
+  overlay.style.display = 'flex';
+}
+
+function hideLocationPopup() {
+  const overlay = document.getElementById('location-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function setLocationDisplay(locationText) {
+  const navbarLocation = document.getElementById('navbar-location');
+  const navbarLocationText = document.getElementById('navbar-location-text');
+  if (navbarLocation && navbarLocationText) {
+    navbarLocationText.textContent = locationText;
+    navbarLocation.style.display = 'flex';
+  }
+  // Hide reminder banner since location is now set
+  const reminder = document.getElementById('location-reminder');
+  if (reminder) reminder.style.display = 'none';
+
+  sessionStorage.setItem('wtf_user_location', locationText);
+}
+
+function detectLocation() {
+  const btn = document.getElementById('btn-detect-location');
+  const status = document.getElementById('location-status');
+
+  if (!navigator.geolocation) {
+    status.textContent = '⚠ Your browser does not support location detection.';
+    status.style.color = '#C0392B';
+    return;
+  }
+
+  btn.innerHTML = '⏳ Detecting your location...';
+  btn.disabled = true;
+  status.textContent = '';
+
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          const address = data.address || {};
+          const locationText = address.suburb
+            || address.neighbourhood
+            || address.city_district
+            || address.city
+            || address.town
+            || address.village
+            || 'Near You';
+
+          setLocationDisplay(locationText);
+          hideLocationPopup();
+          showToast('Location set to ' + locationText, 'success');
+        })
+        .catch(function () {
+          setLocationDisplay('Near You');
+          hideLocationPopup();
+          showToast('Location detected!', 'success');
+        });
+    },
+    function (error) {
+      btn.innerHTML = '<span>📡</span> Use My Current Location';
+      btn.disabled = false;
+
+      if (error.code === error.PERMISSION_DENIED) {
+        status.textContent = '⚠ Permission denied. Please enter your location manually.';
+      } else if (error.code === error.POSITION_UNAVAILABLE) {
+        status.textContent = '⚠ Location unavailable. Please enter manually.';
+      } else {
+        status.textContent = '⚠ Request timed out. Please enter manually.';
+      }
+      status.style.color = '#C0392B';
+    },
+    { timeout: 10000, maximumAge: 300000 }
+  );
+}
+
+function saveManualLocation() {
+  const input = document.getElementById('manual-location-input');
+  const status = document.getElementById('location-status');
+
+  if (!input || !input.value.trim()) {
+    status.textContent = '⚠ Please enter your area or city name.';
+    status.style.color = '#C0392B';
+    return;
+  }
+
+  setLocationDisplay(input.value.trim());
+  hideLocationPopup();
+  showToast('Location set to ' + input.value.trim(), 'success');
+}
+
+function skipLocation() {
+  sessionStorage.setItem('wtf_location_skipped', 'true');
+  hideLocationPopup();
+  // Show reminder banner so user knows they can set it anytime
+  const reminder = document.getElementById('location-reminder');
+  if (reminder) reminder.style.display = 'flex';
+}
