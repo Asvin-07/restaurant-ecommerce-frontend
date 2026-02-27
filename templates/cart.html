@@ -4,12 +4,20 @@
 {% block body_class %}cart-page{% endblock %}
 {% block content %}
 <div class="container-wtf page-section">
-  <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">🛒 Your Cart</h2>
 
-  {% if cart.items %}
-  <div id="cart-main-section" style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;">
+  <div
+    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
+    <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin:0;">🛒 Your Cart</h2>
+    {% if cart.items %}
+    <button id="btn-clear-cart"
+      style="background:none;border:none;color:#C0392B;font-weight:700;font-size:0.85rem;cursor:pointer;text-decoration:underline;font-family:'Nunito',sans-serif;">
+      Clear Cart
+    </button>
+    {% endif %}
+  </div>
 
-    <!-- Cart Items -->
+  <div id="cart-main-section" class="cart-grid" {% if not cart.items %}style="display:none;" {% endif %}>
+
     <div>
       <div id="cart-items-list">
         {% for item in cart.items %}
@@ -28,35 +36,31 @@
             {% if item.special_instructions %}
             <div class="cart-item__instructions">📝 {{ item.special_instructions }}</div>
             {% endif %}
-            <div style="color:#6c757d;font-size:0.8rem;margin-top:0.2rem;">₹{{ item.unit_price }} × <span
-                class="qty-inline-display">{{ item.quantity }}</span></div>
+            <div style="color:#6c757d;font-size:0.8rem;margin-top:0.2rem;">
+              ₹{{ item.unit_price }} × <span class="qty-inline-display">{{ item.quantity }}</span>
+            </div>
           </div>
 
-          <!-- Qty Controls -->
           <div class="qty-ctrl">
             <button class="qty-btn minus">−</button>
             <span class="qty-display qty-ctrl-display">{{ item.quantity }}</span>
             <button class="qty-btn plus">+</button>
           </div>
 
-          <!-- Item Total -->
           <div class="cart-item__price">₹{{ item.total_price|default:item.unit_price }}</div>
-
-          <!-- Remove -->
           <button class="btn-remove" data-cart-item-id="{{ item.id }}" title="Remove item">🗑</button>
         </div>
         {% endfor %}
       </div>
 
       <a href="{% url 'menu' %}"
-        style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#C0392B;margin-top:1rem;font-size:0.9rem;">←
-        Continue Shopping</a>
+        style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#C0392B;margin-top:1rem;font-size:0.9rem;">
+        ← Continue Shopping
+      </a>
     </div>
 
-    <!-- Order Summary -->
     <div class="order-summary-box">
       <h5>Order Summary</h5>
-
       <div class="summary-line">
         <span>Subtotal</span>
         <span id="summary-subtotal">₹{{ cart.subtotal|default:"0.00" }}</span>
@@ -72,14 +76,11 @@
         <span id="summary-tax">Calculated at checkout</span>
       </div>
       {% endif %}
-
       {% if cart.discount %}
       <div class="summary-line" style="color:#2e7d32;">
-        <span>Discount</span>
-        <span>−₹{{ cart.discount }}</span>
+        <span>Discount</span><span>−₹{{ cart.discount }}</span>
       </div>
       {% endif %}
-
       <div class="summary-line total">
         <span>Total</span>
         <span id="summary-total">₹{{ cart.total|default:cart.subtotal|default:"0.00" }}</span>
@@ -89,35 +90,30 @@
         <button class="btn-primary-wtf" style="font-size:1rem;">Proceed to Checkout →</button>
       </a>
 
-      <p style="text-align:center;font-size:0.78rem;color:#6c757d;margin-top:0.75rem;">🔒 Secure checkout via payment
-        gateway</p>
+      {% if not user %}
+      <p style="text-align:center;font-size:0.78rem;color:#6c757d;margin-top:0.5rem;">
+        🔒 You'll be asked to log in before checkout
+      </p>
+      {% endif %}
+
+      <p style="text-align:center;font-size:0.78rem;color:#6c757d;margin-top:0.75rem;">
+        🔒 Secure checkout via payment gateway
+      </p>
     </div>
 
   </div>
 
-  <div id="cart-empty"
-    style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
+  <div id="cart-empty" class="empty-state" {% if cart.items %}style="display:none;" {% endif %}>
     <span style="font-size:5rem;margin-bottom:1.5rem;">🛒</span>
     <h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:0.5rem;">Your cart is empty</h3>
-    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and
-      start ordering!</p>
+    <p style="color:#6c757d;margin-bottom:1.5rem;">
+      Looks like you haven't added anything yet.<br>Explore our menu and start ordering!
+    </p>
     <a href="{% url 'menu' %}" class="btn-primary-wtf"
-      style="display:inline-block; width:auto; padding:0.75rem 2rem; text-decoration:none; text-align:center;">Browse
-      Menu →</a>
+      style="display:inline-block;width:auto;padding:0.75rem 2rem;text-decoration:none;text-align:center;">
+      Browse Menu →
+    </a>
   </div>
 
-  {% else %}
-  <!-- Empty Cart -->
-  <div id="cart-empty"
-    style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 2rem;text-align:center;">
-    <span style="font-size:5rem;margin-bottom:1.5rem;">🛒</span>
-    <h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:0.5rem;">Your cart is empty</h3>
-    <p style="color:#6c757d;margin-bottom:1.5rem;">Looks like you haven't added anything yet.<br>Explore our menu and
-      start ordering!</p>
-    <a href="{% url 'menu' %}" class="btn-primary-wtf"
-      style="display:inline-block; width:auto; padding:0.75rem 2rem; text-decoration:none; text-align:center;">Browse
-      Menu →</a>
-  </div>
-  {% endif %}
 </div>
 {% endblock %}

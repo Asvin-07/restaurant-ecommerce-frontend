@@ -1,7 +1,7 @@
 /* ============================================================
-   Way To Food (WTF) — Custom Stylesheet
-   Aesthetic: Bold, warm food-brand. Deep crimson + saffron gold.
-   Fonts: Playfair Display (display) + Nunito (body)
+  Way To Food (WTF) — Custom Stylesheet
+  Aesthetic: Bold, warm food-brand. Deep crimson + saffron gold.
+  Fonts: Playfair Display (display) + Nunito (body)
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap');
@@ -964,11 +964,15 @@ body.cart-page .wtf-main-content {
   }
 }
 
-/* ── Empty State ─────────────────────────────────────────── */
+/* ────── Empty State ───────── */
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
   color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state .icon {
@@ -983,7 +987,7 @@ body.cart-page .wtf-main-content {
   margin-bottom: 0.5rem;
 }
 
-/* ── Toast Notification ──────────────────────────────────── */
+/* ────── Toast Notification ─────────────*/
 .wtf-toast {
   position: fixed;
   bottom: 1.5rem;
@@ -1027,7 +1031,7 @@ body.cart-page .wtf-main-content {
   }
 }
 
-/* ── Footer ──────────────────────────────────────────────── */
+/* ──────── Footer ──────────────────*/
 .wtf-footer {
   background: var(--brand-dark);
   color: rgba(255, 255, 255, 0.6);
@@ -1042,7 +1046,7 @@ body.cart-page .wtf-main-content {
   color: var(--brand-gold);
 }
 
-/* ── Responsive ──────────────────────────────────────────── */
+/* ──────── Responsive ───────────── */
 @media (max-width: 768px) {
   .menu-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -1083,7 +1087,7 @@ body.cart-page .wtf-main-content {
   }
 }
 
-/* ── Location Popup ──────────────────────────────────────── */
+/* ──────── Location Popup ─────────── */
 #navbar-location:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.4);
@@ -1095,7 +1099,7 @@ body.cart-page .wtf-main-content {
   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
 }
 
-/* ── Checkout Grid ───────────────────────────────────────── */
+/* ──────── Checkout Grid ─────────*/
 .checkout-grid {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -1114,4 +1118,32 @@ body.cart-page .wtf-main-content {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* ── Cart Grid ───────────────────────────────────────────── */
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .cart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Item Detail Grid ────────────────────────────────────── */
+.item-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .item-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
