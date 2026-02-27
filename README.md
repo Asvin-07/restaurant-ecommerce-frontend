@@ -1,131 +1,73 @@
-# Way To Food (WTF) — Customer Restaurant E-Commerce App
+# Way To Food (WTF) — Restaurant Ordering App
+## B.Tech Project — Asvin Nigam | 202252343
 
-A production-quality Django frontend that consumes your existing restaurant backend APIs.
-No business logic is implemented here — all data flows through `api_service.py`.
+This is my frontend for a customer-facing restaurant e-commerce web application,
+built as part of my B.Tech project at IIIT Vadodara.
 
----
+The app lets customers browse the menu, add items to cart, and place orders.
+It is built using Django and plain HTML/CSS/JS — no frontend framework.
 
-## 🚀 Quick Start
-
-```bash
-# 1. Navigate to project directory
-cd Restaurant_BTP
-
-# 2. Create virtual environment
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Set your backend API URL
-export API_BASE_URL=http://your-backend.com/api   # Windows: set API_BASE_URL=...
-
-# 5. Run migrations (for sessions)
-python manage.py migrate
-
-# 6. Start the development server
-python manage.py runserver
-```
-
-Visit: http://127.0.0.1:8000
+Currently using mock/demo data. Backend API integration will be done after midsem.
 
 ---
 
-## 📁 Project Structure
+## How to Run
 
+1. Make sure Python is installed
+2. Install dependencies:
+   pip install -r requirements.txt
+3. Run migrations (needed for sessions):
+   python manage.py migrate
+4. Start the server:
+   python manage.py runserver
+5. Open http://127.0.0.1:8000 in your browser
+
+---
+
+## Pages
+
+| URL | What it does |
+|-----|-------------|
+| `/` | Menu page — browse all food items |
+| `/login/` | Login with mobile + password |
+| `/register/` | Create a new account |
+| `/cart/` | View and edit your cart |
+| `/checkout/` | Enter address and place order |
+| `/orders/` | View past orders |
+| `/orders/<id>/` | Order detail page |
+| `/profile/` | Edit your profile |
+
+---
+
+## Project Structure
 ```
-Restaurant_BTP/
-├── customer_app/
-│   ├── api_service.py     ← ALL API calls (centralized)
-│   ├── views.py           ← Django views (orchestrate API + render templates)
-│   └── urls.py            ← URL routing
-├── templates/
-│   ├── base.html          ← Navbar, footer, messages
-│   ├── login.html
-│   ├── register.html
-│   ├── menu.html          ← Menu browsing with category filter + search
-│   ├── item_detail.html   ← Single item detail + add to cart
-│   ├── cart.html          ← Cart page with AJAX qty updates
-│   ├── checkout.html      ← Address input + order summary
-│   ├── order_confirmation.html
-│   ├── payment_return.html ← Handles payment gateway redirect back
-│   ├── order_history.html
-│   ├── order_detail.html
-│   └── profile.html
-├── static/
-│   ├── css/styles.css        ← All custom styles
-│   └── js/main.js          ← AJAX cart logic, toasts, interactions
-└── restaurant_core/
-    └── settings.py        ← API_BASE_URL, session config, static files
+customer_app/
+    api_service.py   ← all API calls go here (currently mock data)
+    views.py         ← handles requests and passes data to templates
+    urls.py          ← URL routing
+templates/
+    base.html        ← navbar, footer, shared layout
+    menu.html        ← menu grid with category filter
+    cart.html        ← cart page
+    checkout.html    ← checkout page
+    ...
+static/
+    css/styles.css   ← all custom styles
+    js/main.js       ← cart AJAX logic
 ```
 
 ---
 
-## 🔌 API Integration
+## Backend Integration (Pending — After Midsem)
 
-All API calls go through `customer_app/api_service.py`. Configure your backend URL:
-
-```python
-# In settings.py or via environment variable:
-API_BASE_URL = "http://your-backend.com/api"
-```
-
-### Expected API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/login/` | Login with phone + password |
-| POST | `/auth/register/` | Create account |
-| GET | `/auth/profile/` | Get user profile |
-| PUT | `/auth/profile/` | Update profile |
-| GET | `/menu/categories/` | All categories |
-| GET | `/menu/items/` | Menu items (supports `?category=&search=`) |
-| GET | `/menu/items/{id}/` | Item detail |
-| GET | `/cart/` | Get current cart |
-| POST | `/cart/add/` | Add item to cart |
-| PUT | `/cart/items/{id}/` | Update cart item quantity |
-| DELETE | `/cart/items/{id}/` | Remove cart item |
-| POST | `/orders/` | Place order |
-| GET | `/orders/` | Order history |
-| GET | `/orders/{id}/` | Order detail |
-| POST | `/payments/initiate/` | Initiate payment (returns `payment_url`) |
-| GET | `/payments/{id}/status/` | Payment status |
-
-### Auth Token
-
-The backend should return a `token` field in login/register responses:
-```json
-{ "token": "eyJ...", "user": { "id": 1, "name": "...", "phone": "..." } }
-```
-Tokens are stored in Django sessions (server-side, secure).
+The real backend is a Lazzatt API. Integration will be done step by step
+by replacing the mock functions in api_service.py with real API calls.
 
 ---
 
-## 🔒 Security Notes
+## Tech Stack
 
-- Auth tokens are stored in Django's server-side session (not localStorage)
-- CSRF protection is active on all POST forms and AJAX calls
-- API errors are sanitized before display (no internal details leaked)
-- Set `SESSION_COOKIE_SECURE=True` and `DEBUG=False` in production
-
----
-
-## 🎨 Design
-
-- **Font**: Playfair Display (headings) + Nunito (body)
-- **Colors**: Crimson red `#C0392B` + Saffron gold `#E67E22` on cream `#fdf6ee`
-- **Mobile-first**: Fully responsive grid-based layout
-- All styles in `static/css/styles.css` — no framework dependency beyond Google Fonts
-
----
-
-## 🔮 Future Improvements
-
-- PWA support with service worker for offline menu browsing
-- Real-time order tracking via WebSockets
-- Saved addresses management
-- Loyalty points display
-- Personalized recommendations
-- Multi-language support (i18n)
-- Dark mode toggle
+- Python 3 + Django 5
+- Plain CSS (no Bootstrap or Tailwind)
+- Vanilla JavaScript (no React or Vue)
+- SQLite (for Django sessions only)

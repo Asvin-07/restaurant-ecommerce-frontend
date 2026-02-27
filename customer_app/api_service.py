@@ -218,6 +218,20 @@ _MOCK_ITEMS = [
         "price": 120, "category": "4", "category_name": "Rice & Biryani",
         "is_veg": True, "is_available": True, "rating": 4.2, "review_count": 98, "image": "",
     },
+    
+    # ── Salads ──
+    {
+        "id": "501", "name": "Garden Fresh Salad",
+        "description": "Crisp lettuce, cucumber, tomatoes and carrots tossed in a light lemon dressing.",
+        "price": 150, "category": "5", "category_name": "Salads",
+        "is_veg": True, "is_available": True, "rating": 4.1, "review_count": 43, "image": "",
+    },
+    {
+        "id": "502", "name": "Fruit Chaat",
+        "description": "Seasonal fruits tossed in tangy chaat masala and a squeeze of fresh lime.",
+        "price": 120, "category": "5", "category_name": "Salads",
+        "is_veg": True, "is_available": True, "rating": 4.3, "review_count": 67, "image": "",
+    },
 
     # ── Desserts ──
     {

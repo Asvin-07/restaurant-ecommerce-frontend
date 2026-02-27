@@ -1094,3 +1094,24 @@ body.cart-page .wtf-main-content {
   outline: none;
   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
 }
+
+/* ── Checkout Grid ───────────────────────────────────────── */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Inline Qty Control (menu card Add button replacement) ── */
+.inline-qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

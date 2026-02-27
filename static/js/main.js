@@ -277,10 +277,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (addBtn) {
         const itemId = addBtn.dataset.itemId;
         addBtn.outerHTML = `
-          <div class="inline-qty-ctrl" data-item-id="${itemId}" style="display:flex;align-items:center;gap:6px;">
-            <button class="qty-btn minus" style="width:28px;height:28px;border-radius:6px;border:none;background:#fdecea;color:#C0392B;font-weight:900;font-size:1rem;cursor:pointer;">−</button>
-            <span class="qty-display" style="font-weight:900;font-size:0.95rem;min-width:24px;text-align:center;">1</span>
-            <button class="qty-btn plus" style="width:28px;height:28px;border-radius:6px;border:none;background:#C0392B;color:white;font-weight:900;font-size:1rem;cursor:pointer;">+</button>
+          <div class="inline-qty-ctrl" data-item-id="${itemId}">
+            <button class="qty-btn minus">−</button>
+            <span class="qty-display">1</span>
+            <button class="qty-btn plus">+</button>
           </div>`;
 
         addToCart(itemId, 1).then(data => {
@@ -322,10 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = (card || menuGrid).querySelector(`.btn-add[data-item-id="${itemId}"]`);
             if (btn) {
               btn.outerHTML = `
-                <div class="inline-qty-ctrl" data-item-id="${itemId}" style="display:flex;align-items:center;gap:6px;">
-                  <button class="qty-btn minus" style="width:28px;height:28px;border-radius:6px;border:none;background:#fdecea;color:#C0392B;font-weight:900;font-size:1rem;cursor:pointer;">−</button>
-                  <span class="qty-display" style="font-weight:900;font-size:0.95rem;min-width:24px;text-align:center;">1</span>
-                  <button class="qty-btn plus" style="width:28px;height:28px;border-radius:6px;border:none;background:#C0392B;color:white;font-weight:900;font-size:1rem;cursor:pointer;">+</button>
+                <div class="inline-qty-ctrl" data-item-id="${itemId}">
+                  <button class="qty-btn minus">−</button>
+                  <span class="qty-display">1</span>
+                  <button class="qty-btn plus">+</button>
                 </div>`;
             }
           }

@@ -18,7 +18,7 @@
 
   <form id="checkout-form" method="POST" action="{% url 'checkout' %}">
     {% csrf_token %}
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start;">
+    <div class="checkout-grid">
 
       <!-- Left: Address & Note -->
       <div>

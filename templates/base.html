@@ -40,7 +40,7 @@
           style="font-size:0.85rem;color:rgba(255,255,255,0.8);font-weight:600;">My Orders</a>
         <a href="{% url 'profile' %}" class="nav-link"
           style="font-size:0.85rem;color:rgba(255,255,255,0.8);font-weight:600;">
-          {% if user.name %}{{ user.name|slice:":1" }}{% else %}👤{% endif %}
+          👤 Profile
         </a>
 
         <form action="{% url 'logout' %}" method="post" style="margin:0;" data-no-loading>
@@ -56,6 +56,14 @@
     </div>
   </nav>
   {% endblock navbar %}
+
+  <!-- ── Demo Mode Banner ────────────────────────────────── -->
+  {% if DEMO_MODE %}
+  <div
+    style="background:#fff3cd;border-bottom:2px solid #E67E22;padding:0.4rem 1rem;text-align:center;font-size:0.82rem;font-weight:700;color:#856404;">
+    🔧 Demo Mode — Using sample data. Backend API not connected yet.
+  </div>
+  {% endif %}
 
   <!-- ── Location Reminder Banner (Global) ───────────────── -->
   {% block location_reminder %}
