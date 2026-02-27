@@ -33,6 +33,9 @@
       <form method="POST" action="{% url 'login' %}">
         {% csrf_token %}
 
+        {# Preserve the redirect destination across both OTP steps #}
+        <input type="hidden" name="next" value="{{ next_url|default:request.GET.next|default:'' }}">
+
         <div style="margin-bottom:1rem;">
           <label class="form-label">Mobile Number</label>
           <input type="tel" name="phone" class="form-control" placeholder="Enter your 10-digit mobile number"

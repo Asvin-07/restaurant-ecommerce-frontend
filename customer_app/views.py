@@ -16,18 +16,15 @@ import uuid
 
 from . import api_service as api
 
-
 # ─── Auth Helpers ─────────────────────────────────────────────────────────────
 
 def _get_token(request):
     """Get auth token for logged-in user."""
     return request.session.get("auth_token")
 
-
 def _get_user(request):
     """Get logged-in user info from session."""
     return request.session.get("user_info", {})
-
 
 def _get_cart_token(request):
     """
@@ -47,7 +44,6 @@ def _get_cart_token(request):
         request.session.modified = True
     return guest_token
 
-
 def _login_required(view_func):
     """Redirect to login if not authenticated."""
     def wrapper(request, *args, **kwargs):
@@ -58,18 +54,15 @@ def _login_required(view_func):
     wrapper.__name__ = view_func.__name__
     return wrapper
 
-
 def _set_session(request, token, user):
     request.session["auth_token"] = token
     request.session["user_info"] = user
     request.session.modified = True
 
-
 def _clear_session(request):
     request.session.pop("auth_token", None)
     request.session.pop("user_info", None)
     request.session.modified = True
-
 
 def _get_cart_count(request):
     """Get cart item count using correct token (guest or logged-in)."""
@@ -78,7 +71,6 @@ def _get_cart_count(request):
     if result and result.get("ok"):
         return sum(int(item.get("quantity", 0)) for item in result.get("data", {}).get("items", []))
     return 0
-
 
 def _merge_guest_cart(request):
     """
@@ -105,7 +97,6 @@ def _merge_guest_cart(request):
     request.session.pop("guest_cart_token", None)
     request.session.modified = True
 
-
 # ─── Authentication Views ─────────────────────────────────────────────────────
 
 def login_view(request):
@@ -125,7 +116,8 @@ def login_view(request):
             result = api.send_otp(phone=phone)
             if result["ok"]:
                 messages.success(request, f"OTP sent to {phone}")
-                return render(request, "login.html", {"phone": phone, "otp_sent": True})
+                next_url = request.POST.get("next") or request.GET.get("next", "")
+                return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
             else:
                 messages.error(request, result.get("error", "Could not send OTP."))
                 return render(request, "login.html")
@@ -135,14 +127,14 @@ def login_view(request):
         if result["ok"]:
             data = result["data"]
             _set_session(request, token=data.get("token"), user=data.get("user", {}))
-            next_url = request.GET.get("next", "menu")
+            next_url = request.POST.get("next") or request.GET.get("next", "menu")
             return redirect(next_url)
         else:
             messages.error(request, result.get("error", "Invalid OTP. Please try again."))
-            return render(request, "login.html", {"phone": phone, "otp_sent": True})
+            next_url = request.POST.get("next") or request.GET.get("next", "")
+            return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
 
     return render(request, "login.html")
-
 
 def register_view(request):
     if _get_token(request):
@@ -174,12 +166,10 @@ def register_view(request):
             return render(request, "register.html", {"form_data": {"name": name, "phone": phone, "email": email}})
     return render(request, "register.html")
 
-
 def logout_view(request):
     _clear_session(request)
     messages.success(request, "You have been logged out.")
     return redirect("login")
-
 
 # ─── Menu Views ───────────────────────────────────────────────────────────────
 
@@ -209,7 +199,6 @@ def menu_view(request):
         "user":              _get_user(request),
     })
 
-
 def item_detail_view(request, item_id):
     """Public — no login required."""
     token  = _get_token(request)
@@ -222,7 +211,6 @@ def item_detail_view(request, item_id):
         "cart_count": _get_cart_count(request),
         "user":       _get_user(request),
     })
-
 
 # ─── Cart AJAX Views (work for guests too) ────────────────────────────────────
 
@@ -253,7 +241,6 @@ def add_to_cart_view(request):
 
     return JsonResponse({"ok": False, "error": result.get("error", "Could not add item.")}, status=400)
 
-
 @require_http_methods(["POST"])
 def update_cart_item_view(request, cart_item_id):
     """Update cart item quantity — works for guests too."""
@@ -270,7 +257,6 @@ def update_cart_item_view(request, cart_item_id):
         cart_result = api.get_cart(token=token)
         return JsonResponse({"ok": True, "cart": cart_result.get("data", {})})
     return JsonResponse({"ok": False, "error": result.get("error", "Update failed.")}, status=400)
-
 
 @require_http_methods(["POST"])
 def remove_cart_item_view(request, cart_item_id):
@@ -327,7 +313,6 @@ def decrement_cart_item_by_item_id_view(request):
     )
     return JsonResponse({"ok": True, "cart_count": count})
 
-
 # ─── Cart Page ────────────────────────────────────────────────────────────────
 
 def cart_view(request):
@@ -349,7 +334,6 @@ def cart_view(request):
         "cart_count": sum(int(item.get("quantity", 0)) for item in cart_data.get("items", [])),
         "user":       _get_user(request),
     })
-
 
 # ─── Checkout & Orders (login required) ──────────────────────────────────────
 
@@ -415,7 +399,6 @@ def checkout_view(request):
         "user":       _get_user(request),
     })
 
-
 @_login_required
 def payment_return_view(request):
     token      = _get_token(request)
@@ -441,7 +424,6 @@ def payment_return_view(request):
         "user":           _get_user(request),
     })
 
-
 @_login_required
 def order_confirmation_view(request, order_id):
     token  = _get_token(request)
@@ -457,7 +439,6 @@ def order_confirmation_view(request, order_id):
         "user":       _get_user(request),
     })
 
-
 @_login_required
 def order_history_view(request):
     token  = _get_token(request)
@@ -471,7 +452,6 @@ def order_history_view(request):
         "user":       _get_user(request),
     })
 
-
 @_login_required
 def order_detail_view(request, order_id):
     token  = _get_token(request)
@@ -484,7 +464,6 @@ def order_detail_view(request, order_id):
         "cart_count": 0,
         "user":       _get_user(request),
     })
-
 
 @_login_required
 def profile_view(request):
