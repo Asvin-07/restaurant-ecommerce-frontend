@@ -169,7 +169,7 @@ def register_view(request):
 def logout_view(request):
     _clear_session(request)
     messages.success(request, "You have been logged out.")
-    return redirect("login")
+    return redirect("menu")
 
 # ─── Menu Views ───────────────────────────────────────────────────────────────
 

@@ -115,6 +115,23 @@ body.cart-page .wtf-main-content {
   color: var(--brand-gold) !important;
 }
 
+.wtf-navbar .nav-link.nav-active {
+  color: var(--brand-gold) !important;
+  position: relative;
+}
+
+.wtf-navbar .nav-link.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: var(--brand-gold);
+  border-radius: 2px;
+}
+
 .cart-badge-btn {
   background: var(--brand-gold);
   color: var(--brand-dark);

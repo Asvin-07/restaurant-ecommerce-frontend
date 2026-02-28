@@ -24,7 +24,7 @@
         <div style="font-size:0.85rem;color:#6c757d;">
           {% if order.items %}
           {% for oi in order.items|slice:":2" %}{{ oi.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-          {% if order.items|length > 2 %} +{{ order.items|length|add:"-2" }} more{% endif %}
+          {% if order.items|length > 2 %} <em>+more</em> {% endif %}
           {% else %}
           {{ order.item_count|default:"" }} item{% if order.item_count != 1 %}s{% endif %}
           {% endif %}
