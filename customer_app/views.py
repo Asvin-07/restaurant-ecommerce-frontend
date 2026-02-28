@@ -269,6 +269,16 @@ def remove_cart_item_view(request, cart_item_id):
     return JsonResponse({"ok": False, "error": result.get("error", "Could not remove item.")}, status=400)
 
 @require_http_methods(["POST"])
+def clear_cart_view(request):
+    """Clear the entire cart — works for guests too."""
+    token = _get_cart_token(request)
+    result = api.clear_cart(token=token)
+
+    if result["ok"]:
+        return JsonResponse({"ok": True})
+    return JsonResponse({"ok": False, "error": result.get("error", "Could not clear cart.")}, status=400)
+
+@require_http_methods(["POST"])
 def decrement_cart_item_by_item_id_view(request):
     """Decrement cart quantity by menu item_id — used from menu cards."""
     token = _get_cart_token(request)
