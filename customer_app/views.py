@@ -109,7 +109,8 @@ def login_view(request):
 
         if not phone:
             messages.error(request, "Please enter your mobile number.")
-            return render(request, "login.html")
+            next_url = request.POST.get("next") or request.GET.get("next", "")
+            return render(request, "login.html", {"next_url": next_url})
 
         # Step 1 — phone submitted, no OTP yet → send OTP
         if not otp:
@@ -120,7 +121,8 @@ def login_view(request):
                 return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
             else:
                 messages.error(request, result.get("error", "Could not send OTP."))
-                return render(request, "login.html")
+                next_url = request.POST.get("next") or request.GET.get("next", "")
+                return render(request, "login.html", {"next_url": next_url})
 
         # Step 2 — OTP submitted → verify and login
         result = api.verify_otp(phone=phone, otp=otp)
@@ -134,7 +136,8 @@ def login_view(request):
             next_url = request.POST.get("next") or request.GET.get("next", "")
             return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
 
-    return render(request, "login.html")
+    next_url = request.GET.get("next", "")
+    return render(request, "login.html", {"next_url": next_url})
 
 def register_view(request):
     if _get_token(request):

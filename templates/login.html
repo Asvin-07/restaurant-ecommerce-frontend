@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}Login{% endblock %}
-
+{% block global_alerts %}{% endblock %}
 {% block body_class %}{% endblock %}
 
 {% block navbar %}{% endblock %}
@@ -34,7 +34,7 @@
         {% csrf_token %}
 
         {# Preserve the redirect destination across both OTP steps #}
-        <input type="hidden" name="next" value="{{ next_url|default:request.GET.next|default:'' }}">
+        <input type="hidden" name="next" value="{{ next_url|default:'' }}">
 
         <div style="margin-bottom:1rem;">
           <label class="form-label">Mobile Number</label>

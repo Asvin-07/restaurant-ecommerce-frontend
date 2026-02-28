@@ -87,8 +87,13 @@
         {% endif %}
 
         <!-- Description -->
-        <p class="menu-card__desc">{{ item.description|default:"A delicious dish prepared fresh for
-          you."|truncatechars:80 }}</p>
+        <p class="menu-card__desc">
+          {% if item.description %}
+          {{ item.description|truncatechars:80 }}
+          {% else %}
+          A delicious dish prepared fresh for you.
+          {% endif %}
+        </p>
 
         <!-- Price + Add button -->
         <div class="menu-card__footer">

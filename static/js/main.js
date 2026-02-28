@@ -234,6 +234,8 @@ function rerenderCart(cartData) {
     if (cartSection) cartSection.style.display = 'none';
     if (emptyState) emptyState.style.display = 'flex';
     updateCartBadge(0);
+    const clearBtn = document.getElementById("btn-clear-cart");
+    if (clearBtn) clearBtn.style.display = "none";
     return;
   }
 
@@ -402,6 +404,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cartList && cartSection && emptyState && !cartList.querySelector('[data-cart-item-id]')) {
       cartSection.style.display = 'none';
       emptyState.style.display = 'flex';
+      const clearBtn = document.getElementById("btn-clear-cart");
+      if (clearBtn) clearBtn.style.display = "none";
     }
 
     return { removedQty, removedAmount };

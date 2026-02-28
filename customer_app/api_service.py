@@ -41,6 +41,8 @@ def _safe_error(resp):
 
 
 def _get(url, token=None, params=None):
+    if DEMO_MODE:
+        return None
     headers = _auth_headers(token) if token else {}
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=REQUEST_TIMEOUT)
@@ -52,8 +54,9 @@ def _get(url, token=None, params=None):
     except Exception:
         return {"ok": False, "error": "An unexpected error occurred."}
 
-
 def _post(url, payload, token=None):
+    if DEMO_MODE:
+        return None
     headers = _auth_headers(token) if token else {"Content-Type": "application/json"}
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
@@ -65,8 +68,9 @@ def _post(url, payload, token=None):
     except Exception:
         return {"ok": False, "error": "An unexpected error occurred."}
 
-
 def _put(url, payload, token):
+    if DEMO_MODE:
+        return None
     try:
         resp = requests.put(url, json=payload, headers=_auth_headers(token), timeout=REQUEST_TIMEOUT)
         if resp.status_code in (200, 204):
@@ -77,8 +81,9 @@ def _put(url, payload, token):
     except Exception:
         return {"ok": False, "error": "An unexpected error occurred."}
 
-
 def _delete(url, token):
+    if DEMO_MODE:
+        return None
     try:
         resp = requests.delete(url, headers=_auth_headers(token), timeout=REQUEST_TIMEOUT)
         if resp.status_code in (200, 204):
@@ -88,7 +93,6 @@ def _delete(url, token):
         return None
     except Exception:
         return {"ok": False, "error": "An unexpected error occurred."}
-
 
 # ═════════════════════════════════════════════════════════════════════════════
 # MOCK DATA — Edit this section to customize your demo
