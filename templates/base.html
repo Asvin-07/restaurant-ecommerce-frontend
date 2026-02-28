@@ -97,7 +97,8 @@
   </main>
 
   {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and
-  request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' %}
+  request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' and
+  request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
   <a href="{% url 'cart' %}" class="cart-badge-btn floating-cart-btn" aria-label="Open cart">
     🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else
       %}0 Items{% endif %}</span>
