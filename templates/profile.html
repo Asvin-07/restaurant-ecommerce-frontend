@@ -27,8 +27,9 @@
       </div>
       <div style="display:flex;gap:1rem;flex-wrap:wrap;">
         <button type="submit" class="btn-primary-wtf" style="flex:1;">Save Changes</button>
-        <a href="{% url 'order_history' %}" style="flex:1;">
-          <button type="button" class="btn-secondary-wtf" style="width:100%;">My Orders</button>
+        <a href="{% url 'order_history' %}" class="btn-secondary-wtf"
+          style="flex:1;display:inline-block;text-align:center;text-decoration:none;">
+          My Orders
         </a>
       </div>
     </form>
@@ -38,8 +39,9 @@
     <form action="{% url 'logout' %}" method="post" data-no-loading>
       {% csrf_token %}
       <button type="submit"
-        style="background:none;border:none;color:#C0392B;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">Logout
-        →</button>
+        style="background:none;border:none;color:#C0392B;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">
+        Logout →
+      </button>
     </form>
   </div>
 </div>

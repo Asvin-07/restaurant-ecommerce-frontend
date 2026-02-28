@@ -63,8 +63,10 @@
   {% endif %}
 
   <div style="margin-top:1rem;">
-    <a href="{% url 'menu' %}"><button class="btn-primary-wtf" style="width:auto;padding:0.7rem 2rem;">Order Again
-        →</button></a>
+    <a href="{% url 'menu' %}" class="btn-primary-wtf"
+      style="display:inline-block;width:auto;padding:0.7rem 2rem;text-decoration:none;">
+      Order Again →
+    </a>
   </div>
 </div>
 {% endblock %}

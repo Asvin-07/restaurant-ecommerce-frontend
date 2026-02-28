@@ -86,8 +86,9 @@
         <span id="summary-total">₹{{ cart.total|default:cart.subtotal|default:"0.00" }}</span>
       </div>
 
-      <a href="{% url 'checkout' %}" style="display:block;margin-top:1.2rem;">
-        <button class="btn-primary-wtf" style="font-size:1rem;">Proceed to Checkout →</button>
+      <a href="{% url 'checkout' %}" class="btn-primary-wtf"
+        style="display:block;margin-top:1.2rem;font-size:1rem;text-align:center;">
+        Proceed to Checkout →
       </a>
 
       {% if not user %}
