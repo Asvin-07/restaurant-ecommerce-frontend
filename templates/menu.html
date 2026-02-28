@@ -34,7 +34,7 @@
         🍴 All Items
       </a>
       {% for cat in categories %}
-      <a href="#" data-filter-cat="{{ cat.name|slugify }}"
+      <a href="#" data-filter-cat="{{ cat.id }}"
         class="cat-pill {% if selected_category == cat.id|stringformat:'s' %}active{% endif %}">
         {{ cat.name }}
       </a>
@@ -56,7 +56,7 @@
   {% if menu_items %}
   <div class="menu-grid">
     {% for item in menu_items %}
-    <div class="menu-card" data-category="{{ item.category_name|default:''|slugify }}">
+    <div class="menu-card" data-category="{{ item.category|default:'' }}">
 
       <!-- Image -->
       {% if item.image %}
