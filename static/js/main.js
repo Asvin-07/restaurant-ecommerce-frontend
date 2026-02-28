@@ -144,7 +144,7 @@ function updateCartItem(cartItemId, quantity) {
     .catch(() => showToast('Connection error.', 'error'));
 }
 
-// ─── Remove Cart Item ──────────────────────────────────────
+// ─── Remove Cart Item ──────
 function removeCartItem(cartItemId) {
   return fetch(`/cart/items/${cartItemId}/remove/`, {
     method: 'POST',
@@ -156,6 +156,43 @@ function removeCartItem(cartItemId) {
   })
     .then(r => r.json())
     .catch(() => showToast('Connection error.', 'error'));
+}
+
+// ─── Clear Cart ──────
+function clearCart() {
+  if (!confirm("Are you sure you want to clear your cart?")) return;
+
+  fetch("/cart/clear/", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json"
+    }
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        const cartList = document.getElementById("cart-items-list");
+        if (cartList) cartList.innerHTML = "";
+
+        document.getElementById("cart-main-section").style.display = "none";
+        document.getElementById("cart-empty").style.display = "flex";
+
+        const subtotal = document.getElementById("summary-subtotal");
+        const tax = document.getElementById("summary-tax");
+        const total = document.getElementById("summary-total");
+
+        if (subtotal) subtotal.textContent = "₹0.00";
+        if (tax) tax.textContent = "₹0.00";
+        if (total) total.textContent = "₹0.00";
+
+        updateCartBadge(0);
+        showToast("Cart cleared", "info");
+      } else {
+        showToast(data.error || "Could not clear cart", "error");
+      }
+    })
+    .catch(() => showToast("Connection error. Please try again.", "error"));
 }
 
 function decrementCartByItem(itemId) {
@@ -232,8 +269,13 @@ function rerenderCart(cartData) {
   });
 }
 
-// ─── DOM Ready ─────────────────────────────────────────────
+// ─── DOM Ready ───
 document.addEventListener('DOMContentLoaded', () => {
+
+  const clearBtn = document.getElementById("btn-clear-cart");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", clearCart);
+  }
 
   // Menu page: in-place category filter + delegated Add-to-Cart handling
   const menuGrid = document.querySelector('.menu-grid');

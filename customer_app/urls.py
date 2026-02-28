@@ -20,6 +20,7 @@ urlpatterns = [
     path('cart/decrement/', views.decrement_cart_item_by_item_id_view, name='cart_decrement'),
     path('cart/items/<str:cart_item_id>/update/', views.update_cart_item_view, name='cart_update'),
     path('cart/items/<str:cart_item_id>/remove/', views.remove_cart_item_view, name='cart_remove'),
+    path('cart/clear/', views.clear_cart_view, name='cart_clear'),
 
     # Checkout & Payment
     path('checkout/', views.checkout_view, name='checkout'),
