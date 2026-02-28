@@ -187,6 +187,8 @@ function clearCart() {
         if (total) total.textContent = "₹0.00";
 
         updateCartBadge(0);
+        const clearCartBtn = document.getElementById("btn-clear-cart");
+        if (clearCartBtn) clearCartBtn.style.display = "none";
         showToast("Cart cleared", "info");
       } else {
         showToast(data.error || "Could not clear cart", "error");
