@@ -1134,7 +1134,7 @@ body.cart-page .wtf-main-content {
   }
 }
 
-/* ── Item Detail Grid ────────────────────────────────────── */
+/* ─────── Item Detail Grid ───────*/
 .item-detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
