@@ -588,9 +588,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       el.style.transition = 'opacity 0.5s';
       el.style.opacity = '0';
-      setTimeout(() => el.remove(), 500);
-    }, 5000);
-  });
+      setTimeout(() => {
+        const parent = el.parentElement;
+        el.remove();
+        if (parent && parent.querySelectorAll('.wtf-django-alert').length === 0) { parent.remove();}}, 500);}, 5000);});
   // ── Location startup — runs on every page ──────────────
   const savedLocation = sessionStorage.getItem('wtf_user_location');
   const locationSkipped = sessionStorage.getItem('wtf_location_skipped');

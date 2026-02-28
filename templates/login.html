@@ -39,16 +39,23 @@
         <div style="margin-bottom:1rem;">
           <label class="form-label">Mobile Number</label>
           <input type="tel" name="phone" class="form-control" placeholder="Enter your 10-digit mobile number"
-            value="{{ phone|default:'' }}" maxlength="10" required {% if otp_sent %}readonly{% endif %}>
+            value="{{ phone|default:'' }}" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric"
+            required {% if otp_sent %}readonly{% endif %}oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         </div>
 
         {% if otp_sent %}
+        <input type="hidden" name="otp_sent" value="True">
         <div style="margin-bottom:1.5rem;">
           <label class="form-label">Enter OTP</label>
-          <input type="text" name="otp" class="form-control" placeholder="Enter OTP sent to your mobile" maxlength="6"
-            autofocus required>
+          <input type="password" name="otp" class="form-control" placeholder="Enter OTP sent to your mobile"
+            maxlength="6" minlength="4" pattern="[0-9]*" inputmode="numeric" autofocus required>
           <small style="color:#6c757d;font-size:0.78rem;">
-            Didn't receive? <a href="{% url 'login' %}" style="color:#C0392B;font-weight:700;">Resend OTP</a>
+            Didn't receive?
+            <button type="submit" formnovalidate
+            onclick="document.querySelector('input[name=otp]').value='';"
+              style="background:none;border:none;color:#C0392B;font-weight:700;cursor:pointer;padding:0;font-family:inherit;font-size:inherit;">
+              Resend OTP
+            </button>
           </small>
         </div>
         <button type="submit" class="btn-primary-wtf">VERIFY OTP →</button>

@@ -62,6 +62,7 @@ a:hover {
 
 .wtf-main-content {
   display: block;
+  min-height: calc(100vh - 120px);
 }
 
 body.cart-page {
@@ -123,10 +124,10 @@ body.cart-page .wtf-main-content {
 .wtf-navbar .nav-link.nav-active::after {
   content: '';
   position: absolute;
-  bottom: -4px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
+  width: 24px;
   height: 2px;
   background: var(--brand-gold);
   border-radius: 2px;
@@ -1053,14 +1054,19 @@ body.cart-page .wtf-main-content {
   background: var(--brand-dark);
   color: rgba(255, 255, 255, 0.6);
   text-align: center;
-  padding: 1.5rem;
+  padding: 3rem 1.5rem;
   font-size: 0.82rem;
   margin-top: 3rem;
-  padding-bottom: 4.25rem;
 }
 
 .wtf-footer strong {
   color: var(--brand-gold);
+}
+
+@media (max-width: 768px) {
+  .wtf-footer {
+    padding-bottom: 5rem;
+  }
 }
 
 /* ──────── Responsive ───────────── */
@@ -1162,5 +1168,98 @@ body.cart-page .wtf-main-content {
 @media (max-width: 768px) {
   .item-detail-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+            MOBILE RESPONSIVENESS FIXES
+   ========================================= */
+
+/* --- 1. Category Pills (Structural + Your Spacing) --- */
+.category-pills {
+  display: flex;
+  flex-wrap: nowrap !important; /* Force onto one line */
+  overflow-x: auto;             /* Enable horizontal scrolling */
+  -webkit-overflow-scrolling: touch; 
+  scrollbar-width: none;        /* Hide scrollbar Firefox */
+  padding: 0 1.2rem 2px;        /* YOUR custom padding */
+}
+.category-pills::-webkit-scrollbar {
+  display: none;                /* Hide scrollbar Chrome/Safari */
+}
+.cat-pill {
+  flex-shrink: 0;               /* Stop pills from squishing */
+}
+
+/* --- Mobile-Only Rules (Screens smaller than 768px) --- */
+@media (max-width: 768px) {
+  
+  /* --- Your Sticky Offset --- */
+  .category-strip {
+    top: 64px;
+  }
+
+  /* --- Your Navbar Tweaks + Safety Scroll --- */
+  .wtf-navbar .nav-link {
+    padding: 0.4rem 0.4rem;
+    font-size: 0.72rem;
+    letter-spacing: 0; 
+  }
+  .wtf-navbar .navbar-nav {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Safety: allows swiping if screen is too narrow */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .wtf-navbar .navbar-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* --- Location Banner (Stacking to prevent squishing) --- */
+  #location-reminder {
+    flex-direction: column !important;
+    text-align: center;
+    padding: 1rem !important;
+    gap: 0.5rem;
+  }
+
+  /* --- Search Bar (Your button fix + My input fix) --- */
+  .search-bar {
+    display: flex;
+    flex-wrap: nowrap; 
+    gap: 0.5rem;
+  }
+  .search-bar input {
+    flex: 1;           /* Input takes up remaining space */
+    min-width: 0;      /* Prevents input from breaking flex layout */
+  }
+  .search-bar button {
+    flex-shrink: 0;    /* YOUR fix: Protects button */
+    padding: 0.4rem 0.75rem; /* YOUR padding */
+  }
+}
+@media (max-width: 768px) {
+  .wtf-navbar .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+.wtf-navbar .container,
+  .wtf-navbar .container-fluid {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+  }
+
+  .wtf-navbar .navbar-collapse {
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .wtf-navbar .navbar-nav {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    width: 100% !important;
   }
 }

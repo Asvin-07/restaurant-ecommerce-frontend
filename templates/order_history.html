@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}My Orders{% endblock %}
 {% block content %}
-<div class="container-wtf page-section" style="max-width:800px;">
+<div class="container-wtf page-section" style="max-width:800px;padding-top:1rem;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
     <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin:0;">My Orders</h2>
     <a href="{% url 'menu' %}" class="btn-secondary-wtf"
@@ -15,7 +15,7 @@
       <div class="order-card__header">
         <div>
           <div class="order-id">Order #{{ order.id|default:order.order_id }}</div>
-          <div class="order-date">{{ order.created_at|default:order.date }}</div>
+          <div class="order-date">{{ order.created_at|default:"-" }}</div>
         </div>
         <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
       </div>

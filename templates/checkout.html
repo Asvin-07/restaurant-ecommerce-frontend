@@ -73,10 +73,8 @@
         <div style="margin-top:0.75rem;">
           <div class="summary-line"><span>Subtotal</span><span>₹{{ cart.subtotal|default:"0.00" }}</span></div>
           {% if cart.tax %}<div class="summary-line"><span>Tax</span><span>₹{{ cart.tax }}</span></div>{% endif %}
-          {% if cart.discount %}<div class="summary-line" style="color:#2e7d32;"><span>Discount</span><span>−₹{{
-              cart.discount }}</span></div>{% endif %}
-          <div class="summary-line total"><span>Total</span><span>₹{{ cart.total|default:cart.subtotal|default:"0.00"
-              }}</span></div>
+          {% if cart.discount %}<div class="summary-line" style="color:#2e7d32;"><span>Discount</span><span>−₹{{ cart.discount }}</span></div>{% endif %}
+          <div class="summary-line total"><span>Total</span><span>₹{{ cart.total|default:cart.subtotal|default:"0.00"}}</span></div>
         </div>
 
         <button type="submit" class="btn-primary-wtf" style="margin-top:1.2rem;font-size:1rem;">
@@ -84,8 +82,9 @@
         </button>
 
         <a href="{% url 'cart' %}"
-          style="display:block;text-align:center;margin-top:0.75rem;font-size:0.85rem;color:#6c757d;font-weight:600;">←
-          Edit Cart</a>
+          style="display:block;text-align:center;margin-top:0.75rem;font-size:0.85rem;color:#6c757d;font-weight:600;">
+          ← Edit Cart
+        </a>
       </div>
 
     </div>

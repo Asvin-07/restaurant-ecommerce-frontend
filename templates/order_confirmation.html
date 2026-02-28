@@ -17,8 +17,7 @@
       </div>
       <div class="order-info-row">
         <span class="label">Status</span>
-        <span class="status-badge status-{{ order.status|lower|default:'confirmed' }}">{{
-          order.status|default:"Confirmed" }}</span>
+        <span class="status-badge status-{{ order.status|lower|default:'confirmed' }}">{{ order.status|default:"Confirmed" }}</span>
       </div>
       <div class="order-info-row">
         <span class="label">Total Amount</span>
@@ -27,8 +26,7 @@
       {% if order.delivery_address %}
       <div class="order-info-row">
         <span class="label">Delivery To</span>
-        <span class="value" style="font-size:0.85rem;max-width:250px;text-align:right;">{{ order.delivery_address
-          }}</span>
+        <span class="value" style="font-size:0.85rem;max-width:250px;text-align:right;">{{ order.delivery_address }}</span>
       </div>
       {% endif %}
       {% if order.estimated_delivery %}

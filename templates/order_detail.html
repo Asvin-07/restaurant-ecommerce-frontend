@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% block title %}Order #{{ order.id|default:order.order_id }}{% endblock %}
 {% block content %}
-<div class="container-wtf page-section" style="max-width:700px;">
+<div class="container-wtf page-section" style="max-width:700px;padding-top:1rem;">
   <a href="{% url 'order_history' %}"
-    style="font-weight:700;font-size:0.9rem;color:#C0392B;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;">←
-    My Orders</a>
+    style="font-weight:700;font-size:0.9rem;color:#C0392B;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;">
+    ← My Orders
+  </a>
 
   <div
     style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
-    <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin:0;">Order #{{ order.id|default:order.order_id
-      }}</h2>
+    <h2 style="font-family:'Nunito',sans-serif;font-weight:900;margin:0;font-size:1.4rem;">Order #{{ order.id|default:order.order_id }}</h2>
     <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
   </div>
 
@@ -22,16 +22,14 @@
       <div>
         <div style="font-weight:700;">{{ item.name }}</div>
         <div style="font-size:0.82rem;color:#6c757d;">₹{{ item.unit_price }} × {{ item.quantity }}</div>
-        {% if item.special_instructions %}<div style="font-size:0.78rem;color:#6c757d;font-style:italic;">{{
-          item.special_instructions }}</div>{% endif %}
+        {% if item.special_instructions %}<div style="font-size:0.78rem;color:#6c757d;font-style:italic;">{{ item.special_instructions }}</div>{% endif %}
       </div>
       <div style="font-weight:900;color:#C0392B;">₹{{ item.total_price }}</div>
     </div>
     {% endfor %}
 
     <div style="margin-top:0.75rem;">
-      {% if order.subtotal %}<div class="summary-line"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>{%
-      endif %}
+      {% if order.subtotal %}<div class="summary-line"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>{% endif %}
       {% if order.tax %}<div class="summary-line"><span>Tax</span><span>₹{{ order.tax }}</span></div>{% endif %}
       <div class="summary-line total"><span>Total</span><span>₹{{ order.total_amount|default:order.total }}</span></div>
     </div>

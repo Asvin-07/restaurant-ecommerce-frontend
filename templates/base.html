@@ -32,7 +32,7 @@
         <span style="font-size:0.7rem; opacity:0.7;">▼</span>
       </div>
 
-      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
         {% if user %}
         <a href="{% url 'menu' %}"
           class="nav-link {% if request.resolver_match.url_name == 'menu' %}nav-active{% endif %}"
@@ -46,14 +46,14 @@
         </a>
         <a href="{% url 'profile' %}"
           class="nav-link {% if request.resolver_match.url_name == 'profile' %}nav-active{% endif %}"
-          style="font-size:0.85rem;font-weight:600;">
-          👤 Profile
+          style="font-size:0.85rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+          Profile
         </a>
 
         <form action="{% url 'logout' %}" method="post" style="margin:0;" data-no-loading>
           {% csrf_token %}
           <button type="submit"
-            style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:Nunito,sans-serif;padding:0;">Logout</button>
+            style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.85rem;cursor:pointer;font-family:Nunito,sans-serif;font-weight:600;padding:0.5rem 1rem;">Logout</button>
         </form>
         {% else %}
         <a href="{% url 'login' %}"
@@ -102,6 +102,7 @@
     {% endblock global_alerts %}
 
     <!-- ── Main Content ─────────────────────────────────────────── -->
+    <div style="display:none;">{% csrf_token %}</div>
     {% block content %}{% endblock %}
   </main>
 
@@ -113,7 +114,6 @@
   {% endif %}
 
   <!-- ── Footer ──────────────────────────────────────────────── -->
-  <div style="display:none;">{% csrf_token %}</div>
   {% block footer %}
   <footer class="wtf-footer">
     <strong>Way To Food</strong> &nbsp;·&nbsp; All rights reserved &copy; 2026 &nbsp;·&nbsp; B.Tech. Project

@@ -116,7 +116,9 @@ def login_view(request):
         if not otp:
             result = api.send_otp(phone=phone)
             if result["ok"]:
-                messages.success(request, f"OTP sent to {phone}")
+                is_resend = request.POST.get("otp_sent") == "True"
+                msg = f"A new OTP has been sent to {phone}" if is_resend else f"OTP sent to {phone}"
+                messages.success(request, msg)
                 next_url = request.POST.get("next") or request.GET.get("next", "")
                 return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
             else:
@@ -495,8 +497,12 @@ def profile_view(request):
         else:
             messages.error(request, result.get("error", "Update failed."))
 
-    profile_result = api.get_profile(token=token)
-    profile = profile_result.get("data", _get_user(request)) if profile_result["ok"] else _get_user(request)
+    session_user = _get_user(request)
+    if session_user.get("name"):
+        profile = session_user
+    else:
+        profile_result = api.get_profile(token=token)
+        profile = profile_result.get("data", session_user) if profile_result["ok"] else session_user
 
     return render(request, "profile.html", {
         "profile":    profile,
