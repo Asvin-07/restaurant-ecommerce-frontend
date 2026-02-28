@@ -1066,6 +1066,11 @@ body.cart-page .wtf-main-content {
 @media (max-width: 768px) {
   .wtf-footer {
     padding-bottom: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
   }
 }
 
@@ -1196,24 +1201,7 @@ body.cart-page .wtf-main-content {
   
   /* --- Your Sticky Offset --- */
   .category-strip {
-    top: 64px;
-  }
-
-  /* --- Your Navbar Tweaks + Safety Scroll --- */
-  .wtf-navbar .nav-link {
-    padding: 0.4rem 0.4rem;
-    font-size: 0.72rem;
-    letter-spacing: 0; 
-  }
-  .wtf-navbar .navbar-nav {
-    flex-direction: row !important;
-    flex-wrap: nowrap;
-    overflow-x: auto; /* Safety: allows swiping if screen is too narrow */
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .wtf-navbar .navbar-nav::-webkit-scrollbar {
-    display: none;
+    top: 84px;
   }
 
   /* --- Location Banner (Stacking to prevent squishing) --- */
@@ -1239,27 +1227,40 @@ body.cart-page .wtf-main-content {
     padding: 0.4rem 0.75rem; /* YOUR padding */
   }
 }
+
 @media (max-width: 768px) {
-  .wtf-navbar .navbar-brand {
-    font-size: 1.1rem;
+  .wtf-navbar {
+    padding: 0.5rem 0;
   }
 
-.wtf-navbar .container,
-  .wtf-navbar .container-fluid {
+  #wtf-nav-container {
     flex-direction: column !important;
     align-items: center !important;
-    gap: 0.4rem !important;
+    gap: 0.2rem !important;
   }
 
-  .wtf-navbar .navbar-collapse {
-    width: 100% !important;
-    display: block !important;
-  }
-
-  .wtf-navbar .navbar-nav {
-    flex-direction: row !important;
+  #wtf-nav-links {
     flex-wrap: nowrap !important;
     justify-content: center !important;
+    gap: 0 !important;
+  }
+
+  .wtf-navbar .navbar-brand {
+    font-size: 1.3rem !important;
+    text-align: center !important;
     width: 100% !important;
+  }
+
+  .wtf-navbar .brand-sub {
+    font-size: 0.6rem !important;
+    letter-spacing: 2.5px !important;
+    text-align: center !important;
+    margin-top: 0.15rem;
+  }
+
+  .wtf-navbar .nav-link,
+  #wtf-nav-links button {
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.82rem !important;
   }
 }

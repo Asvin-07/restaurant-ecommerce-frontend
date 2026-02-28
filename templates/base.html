@@ -16,7 +16,7 @@
   <!-- ── Navbar ──────────────────────────────────────────────── -->
   {% block navbar %}
   <nav class="wtf-navbar">
-    <div class="container-wtf" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+    <div id="wtf-nav-container" class="container-wtf" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
       <a href="{% url 'menu' %}" class="navbar-brand" style="text-decoration:none;">
         <div style="line-height:1.1;">
           <span style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#E67E22;">WTF</span>
@@ -32,7 +32,7 @@
         <span style="font-size:0.7rem; opacity:0.7;">▼</span>
       </div>
 
-      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+      <div id="wtf-nav-links" style="display:flex;align-items:center;gap:0.5rem;">
         {% if user %}
         <a href="{% url 'menu' %}"
           class="nav-link {% if request.resolver_match.url_name == 'menu' %}nav-active{% endif %}"
