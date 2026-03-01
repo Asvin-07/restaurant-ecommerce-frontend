@@ -1,12 +1,9 @@
-/* ============================================================
-  Way To Food (WTF) — Custom Stylesheet
-  Aesthetic: Bold, warm food-brand. Deep crimson + saffron gold.
-  Fonts: Playfair Display (display) + Nunito (body)
-   ============================================================ */
+/*  Deep crimson + saffron gold.
+  Fonts: Playfair Display (display) + Nunito (body) */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap');
 
-/* ── CSS Variables ───────────────────────────────────────── */
+/* ───  Variables ────────── */
 :root {
   --brand-red: #C0392B;
   --brand-red-dk: #962d22;
@@ -25,7 +22,7 @@
   --transition: 0.22s ease;
 }
 
-/* ── Base ────────────────────────────────────────────────── */
+/* ───── Base ───── */
 *,
 *::before,
 *::after {
@@ -75,7 +72,7 @@ body.cart-page .wtf-main-content {
   flex: 1 0 auto;
 }
 
-/* ── Navbar ──────────────────────────────────────────────── */
+/* ───── Navbar ───── */
 .wtf-navbar {
   background: linear-gradient(135deg, var(--brand-dark) 0%, #2d0a05 100%);
   padding: 0.75rem 0;
@@ -133,6 +130,26 @@ body.cart-page .wtf-main-content {
   border-radius: 2px;
 }
 
+/* ──────── Location Popup & Settings ─────────── */
+#navbar-location {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+#navbar-location:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+#manual-location-input:focus {
+  border-color: #C0392B;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
+}
+
+/* ──── Cart Badges & Buttons ──── */
 .cart-badge-btn {
   background: var(--brand-gold);
   color: var(--brand-dark);
@@ -176,24 +193,13 @@ body.cart-page .wtf-main-content {
   font-size: 0.9rem;
 }
 
-/* ── Hero Banner (Menu page) ─────────────────────────────── */
+/* ──── Hero Banner (Menu page) ──── */
 .wtf-hero {
   background: linear-gradient(135deg, var(--brand-red) 0%, var(--brand-gold) 100%);
   padding: 3rem 0 2rem;
   color: white;
   position: relative;
   overflow: hidden;
-}
-
-.wtf-hero::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 50%;
 }
 
 .wtf-hero h1 {
@@ -208,7 +214,7 @@ body.cart-page .wtf-main-content {
   font-size: 1.1rem;
 }
 
-/* ── Search Bar ──────────────────────────────────────────── */
+/* ──── Search Bar ───── */
 .search-bar {
   background: white;
   border-radius: 50px;
@@ -246,7 +252,7 @@ body.cart-page .wtf-main-content {
   background: var(--brand-red-dk);
 }
 
-/* ── Category Filter ─────────────────────────────────────── */
+/* ───── Category Filter ───── */
 .category-strip {
   background: white;
   border-bottom: 1px solid var(--border);
@@ -258,10 +264,12 @@ body.cart-page .wtf-main-content {
 
 .category-pills {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: nowrap !important;
   overflow-x: auto;
-  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  padding: 0 1.2rem 2px;
+  gap: 0.5rem;
 }
 
 .category-pills::-webkit-scrollbar {
@@ -269,6 +277,7 @@ body.cart-page .wtf-main-content {
 }
 
 .cat-pill {
+  flex-shrink: 0;
   white-space: nowrap;
   border: 2px solid var(--border);
   border-radius: 50px;
@@ -290,7 +299,7 @@ body.cart-page .wtf-main-content {
   color: white;
 }
 
-/* ── Menu Item Cards ─────────────────────────────────────── */
+/* ───── Menu Item Cards ─────── */
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -370,15 +379,19 @@ body.cart-page .wtf-main-content {
   color: var(--brand-red);
 }
 
-.veg-badge {
+.veg-badge,
+.nveg-badge {
   width: 18px;
   height: 18px;
-  border: 2px solid #2e7d32;
   border-radius: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.veg-badge {
+  border: 2px solid #2e7d32;
 }
 
 .veg-badge::after {
@@ -390,14 +403,7 @@ body.cart-page .wtf-main-content {
 }
 
 .nveg-badge {
-  width: 18px;
-  height: 18px;
   border: 2px solid var(--brand-red);
-  border-radius: 3px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 .nveg-badge::after {
@@ -440,14 +446,13 @@ body.cart-page .wtf-main-content {
   letter-spacing: 0.5px;
 }
 
-/* ── Auth Pages ──────────────────────────────────────────── */
+/* ───── Auth Pages ────── */
 .auth-wrapper {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #2d0a05 0%, #1a1a1a 50%, #3d1a00 100%);
-  /* padding: 2rem 1rem; */
 }
 
 .auth-card {
@@ -561,7 +566,7 @@ body.cart-page .wtf-main-content {
   color: var(--text-muted);
 }
 
-/* ── Alerts ──────────────────────────────────────────────── */
+/* ───── Alerts ───── */
 .alert-wtf {
   border-radius: var(--radius-sm);
   padding: 0.75rem 1rem;
@@ -592,7 +597,29 @@ body.cart-page .wtf-main-content {
   border-left: 4px solid #e67e22;
 }
 
-/* ── Cart Page ───────────────────────────────────────────── */
+/* ────── General Layout Grids ──────── */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.item-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ───── Cart Page ─────── */
 .cart-item {
   background: white;
   border-radius: var(--radius);
@@ -638,6 +665,12 @@ body.cart-page .wtf-main-content {
   font-weight: 900;
   color: var(--brand-red);
   font-size: 1rem;
+}
+
+.inline-qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .qty-ctrl {
@@ -700,7 +733,7 @@ body.cart-page .wtf-main-content {
   background: #fdecea;
 }
 
-/* ── Order Summary Box ───────────────────────────────────── */
+/* ──── Order Summary Box ───── */
 .order-summary-box {
   background: white;
   border-radius: var(--radius);
@@ -738,7 +771,7 @@ body.cart-page .wtf-main-content {
   margin-top: 0.5rem;
 }
 
-/* ── Checkout ────────────────────────────────────────────── */
+/* ───── Checkout ──────── */
 .checkout-card {
   background: white;
   border-radius: var(--radius);
@@ -773,7 +806,7 @@ body.cart-page .wtf-main-content {
   color: var(--text-muted);
 }
 
-/* ── Order Confirmation ──────────────────────────────────── */
+/* ──── Order Confirmation ───── */
 .confirmation-wrapper {
   min-height: 70vh;
   display: flex;
@@ -843,7 +876,7 @@ body.cart-page .wtf-main-content {
   color: var(--brand-dark);
 }
 
-/* ── Order History ───────────────────────────────────────── */
+/* ───── Order History ─────── */
 .order-card {
   background: white;
   border-radius: var(--radius);
@@ -927,7 +960,7 @@ body.cart-page .wtf-main-content {
   color: var(--brand-red);
 }
 
-/* ── Profile ─────────────────────────────────────────────── */
+/* ───── Profile ─────── */
 .profile-avatar {
   width: 80px;
   height: 80px;
@@ -943,7 +976,7 @@ body.cart-page .wtf-main-content {
   margin: 0 auto 1rem;
 }
 
-/* ── Page Sections ───────────────────────────────────────── */
+/* ──── Page Sections ─────── */
 .page-section {
   padding: 1.5rem 0;
 }
@@ -954,7 +987,7 @@ body.cart-page .wtf-main-content {
   padding: 0 1.2rem;
 }
 
-/* ── Loading Spinner ─────────────────────────────────────── */
+/* ─── Loading Spinner ─────── */
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -1005,7 +1038,7 @@ body.cart-page .wtf-main-content {
   margin-bottom: 0.5rem;
 }
 
-/* ────── Toast Notification ─────────────*/
+/* ────── Toast Notification ────── */
 .wtf-toast {
   position: fixed;
   bottom: 1.5rem;
@@ -1049,7 +1082,7 @@ body.cart-page .wtf-main-content {
   }
 }
 
-/* ──────── Footer ──────────────────*/
+/* ──────── Footer ──────── */
 .wtf-footer {
   background: var(--brand-dark);
   color: rgba(255, 255, 255, 0.6);
@@ -1063,19 +1096,28 @@ body.cart-page .wtf-main-content {
   color: var(--brand-gold);
 }
 
-@media (max-width: 768px) {
-  .wtf-footer {
-    padding-bottom: 5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100px;
+
+/* RESPONSIVE DESIGN (Media Queries) */
+
+/* --- Extra Small Devices (Phones) --- */
+@media (max-width: 480px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-card {
+    border-radius: 16px;
+  }
+
+  .auth-card__body {
+    padding: 1.5rem;
   }
 }
 
-/* ──────── Responsive ───────────── */
+/* --- Mobile / Tablet Master Block --- */
 @media (max-width: 768px) {
+
+  /* Layout & Cards */
   .menu-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
@@ -1099,136 +1141,15 @@ body.cart-page .wtf-main-content {
     padding: 0.65rem 0.9rem;
     font-size: 0.85rem;
   }
-}
 
-@media (max-width: 480px) {
-  .menu-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .auth-card {
-    border-radius: 16px;
-  }
-
-  .auth-card__body {
-    padding: 1.5rem;
-  }
-}
-
-/* ──────── Location Popup ─────────── */
-#navbar-location:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-#manual-location-input:focus {
-  border-color: #C0392B;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
-}
-
-/* ──────── Checkout Grid ─────────*/
-.checkout-grid {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-@media (max-width: 768px) {
-  .checkout-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ── Inline Qty Control (menu card Add button replacement) ── */
-.inline-qty-ctrl {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* ── Cart Grid ───────────────────────────────────────────── */
-.cart-grid {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-@media (max-width: 768px) {
-  .cart-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ─────── Item Detail Grid ───────*/
-.item-detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-@media (max-width: 768px) {
+  /* Grid Collapses */
+  .checkout-grid,
+  .cart-grid,
   .item-detail-grid {
     grid-template-columns: 1fr;
   }
-}
 
-/* =========================================
-            MOBILE RESPONSIVENESS FIXES
-   ========================================= */
-
-/* --- 1. Category Pills (Structural + Your Spacing) --- */
-.category-pills {
-  display: flex;
-  flex-wrap: nowrap !important; /* Force onto one line */
-  overflow-x: auto;             /* Enable horizontal scrolling */
-  -webkit-overflow-scrolling: touch; 
-  scrollbar-width: none;        /* Hide scrollbar Firefox */
-  padding: 0 1.2rem 2px;        /* YOUR custom padding */
-}
-.category-pills::-webkit-scrollbar {
-  display: none;                /* Hide scrollbar Chrome/Safari */
-}
-.cat-pill {
-  flex-shrink: 0;               /* Stop pills from squishing */
-}
-
-/* --- Mobile-Only Rules (Screens smaller than 768px) --- */
-@media (max-width: 768px) {
-  
-  /* --- Your Sticky Offset --- */
-  .category-strip {
-    top: 84px;
-  }
-
-  /* --- Location Banner (Stacking to prevent squishing) --- */
-  #location-reminder {
-    flex-direction: column !important;
-    text-align: center;
-    padding: 1rem !important;
-    gap: 0.5rem;
-  }
-
-  /* --- Search Bar (Your button fix + My input fix) --- */
-  .search-bar {
-    display: flex;
-    flex-wrap: nowrap; 
-    gap: 0.5rem;
-  }
-  .search-bar input {
-    flex: 1;           /* Input takes up remaining space */
-    min-width: 0;      /* Prevents input from breaking flex layout */
-  }
-  .search-bar button {
-    flex-shrink: 0;    /* YOUR fix: Protects button */
-    padding: 0.4rem 0.75rem; /* YOUR padding */
-  }
-}
-
-@media (max-width: 768px) {
+  /* Navbar */
   .wtf-navbar {
     padding: 0.5rem 0;
   }
@@ -1262,5 +1183,57 @@ body.cart-page .wtf-main-content {
   #wtf-nav-links button {
     padding: 0.35rem 0.75rem !important;
     font-size: 0.82rem !important;
+  }
+
+  #navbar-location {
+    position: relative !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0.5rem auto !important;
+  }
+
+  /* Location Banner */
+  #location-reminder {
+    flex-direction: column !important;
+    text-align: center;
+    padding: 1rem !important;
+    gap: 0.5rem;
+  }
+
+  /* Sticky Strip & Search */
+  .category-strip {
+    top: 84px;
+  }
+
+  .search-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  .search-bar input {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 10;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .search-bar button {
+    flex-shrink: 0;
+    padding: 0.4rem 0.75rem;
+  }
+
+  /* Footer Adjustment */
+  .wtf-footer {
+    padding-bottom: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
   }
 }

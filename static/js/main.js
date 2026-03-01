@@ -548,10 +548,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Checkout form — show loading on submit
+ // Checkout form — show loading on submit & validate address
   const checkoutForm = document.getElementById('checkout-form');
   if (checkoutForm) {
-    checkoutForm.addEventListener('submit', function () {
+    checkoutForm.addEventListener('submit', function (e) {
+      
+      // 1. Validate Address Length
+      const addressInput = document.querySelector('textarea[name="delivery_address"]');
+      if (addressInput && addressInput.value.trim().length < 12) {
+        e.preventDefault(); // Stop the form from submitting
+        showToast('Please enter your complete address (House No, Street, etc.)', 'error');
+        addressInput.focus(); // Put the blinking cursor back in the box
+        return;
+      }
+
+      // 2. Show Loading State
       const btn = this.querySelector('button[type="submit"]');
       if (btn) {
         if (btn.disabled) return;
@@ -591,29 +602,65 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         const parent = el.parentElement;
         el.remove();
-        if (parent && parent.querySelectorAll('.wtf-django-alert').length === 0) { parent.remove();}}, 500);}, 5000);});
+        if (parent && parent.querySelectorAll('.wtf-django-alert').length === 0) { parent.remove(); }
+      }, 500);
+    }, 5000);
+  });
+
   // ── Location startup — runs on every page ──────────────
-  const savedLocation = sessionStorage.getItem('wtf_user_location');
+  let savedLocation = sessionStorage.getItem('wtf_user_location');
   const locationSkipped = sessionStorage.getItem('wtf_location_skipped');
 
+  const navbarLocation = document.getElementById('navbar-location');
+  const navbarLocationText = document.getElementById('navbar-location-text');
+
+  // 1. Sync Backend location to Frontend memory (Ignore dummy text)
+  if (!savedLocation && navbarLocationText) {
+    const dbLocation = navbarLocationText.textContent.trim();
+    const ignoreList = ['', 'Location not set', 'Set Location', 'Locating...'];
+
+    if (!ignoreList.includes(dbLocation)) {
+      savedLocation = dbLocation;
+      sessionStorage.setItem('wtf_user_location', savedLocation);
+    }
+  }
+
   if (savedLocation) {
-    // Restore display only — don't call setLocationDisplay
-    // because that would unnecessarily rewrite sessionStorage
-    const navbarLocation = document.getElementById('navbar-location');
-    const navbarLocationText = document.getElementById('navbar-location-text');
+    // 2. We have a location! Display it and clean up banners
     if (navbarLocation && navbarLocationText) {
       navbarLocationText.textContent = savedLocation;
       navbarLocation.style.display = 'flex';
     }
+
     const reminder = document.getElementById('location-reminder');
-    if (reminder) reminder.style.display = 'none';
-  } else if (locationSkipped) {
-    const reminder = document.getElementById('location-reminder');
-    if (reminder) reminder.style.display = 'flex';
+    if (reminder) {
+      reminder.style.display = 'none';
+    }
+
+    const addressInput = document.querySelector('textarea[name="delivery_address"]');
+    if (addressInput && addressInput.value.trim() === '') {
+      addressInput.value = savedLocation;
+    }
+
+    const warningBox = document.getElementById('checkout-location-warning');
+    if (warningBox) {
+      warningBox.style.display = 'none';
+    }
+
   } else {
-    // Only auto-popup on home/menu page
-    if (window.location.pathname === '/') {
-      setTimeout(showLocationPopup, 800);
+    // 3. NO location is set. Clean up the stuck "Locating..." UI
+    if (navbarLocationText && navbarLocationText.textContent.trim() === 'Locating...') {
+      // Let's just hide the navbar pill entirely! The big yellow banner is already asking them.
+      if (navbarLocation) navbarLocation.style.display = 'none';
+    }
+
+    if (locationSkipped) {
+      const reminder = document.getElementById('location-reminder');
+      if (reminder) reminder.style.display = 'flex';
+    } else {
+      if (window.location.pathname === '/') {
+        setTimeout(showLocationPopup, 800);
+      }
     }
   }
 });
@@ -648,6 +695,18 @@ function setLocationDisplay(locationText) {
   // Hide reminder banner since location is now set
   const reminder = document.getElementById('location-reminder');
   if (reminder) reminder.style.display = 'none';
+
+  // Auto-fill the delivery address
+  const addressInput = document.querySelector('textarea[name="delivery_address"]');
+  if (addressInput && addressInput.value.trim() === '') {
+    addressInput.value = locationText;
+  }
+
+  // Hide the  warning box
+  const warningBox = document.getElementById('checkout-location-warning');
+  if (warningBox) {
+    warningBox.style.display = 'none';
+  }
 
   sessionStorage.setItem('wtf_user_location', locationText);
 }
