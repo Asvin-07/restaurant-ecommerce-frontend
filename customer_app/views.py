@@ -106,6 +106,10 @@ def login_view(request):
     if request.method == "POST":
         phone = request.POST.get("phone", "").strip()
         otp   = request.POST.get("otp", "").strip()
+        action = request.POST.get("auth_action", "").strip()
+
+        if action == "resend":
+            otp = ""
 
         if not phone:
             messages.error(request, "Please enter your mobile number.")
@@ -116,7 +120,7 @@ def login_view(request):
         if not otp:
             result = api.send_otp(phone=phone)
             if result["ok"]:
-                is_resend = request.POST.get("otp_sent") == "True"
+                is_resend = action == "resend" or request.POST.get("otp_sent") == "True"
                 msg = f"A new OTP has been sent to {phone}" if is_resend else f"OTP sent to {phone}"
                 messages.success(request, msg)
                 next_url = request.POST.get("next") or request.GET.get("next", "")

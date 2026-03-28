@@ -49,18 +49,19 @@
           <label class="form-label">Enter OTP</label>
           <input type="password" name="otp" class="form-control" placeholder="Enter OTP sent to your mobile"
             maxlength="6" minlength="4" pattern="[0-9]*" inputmode="numeric" autofocus required>
+        </div>
+        <button type="submit" name="auth_action" value="verify" class="btn-primary-wtf">VERIFY OTP →</button>
+        <div style="margin-top:0.75rem;">
           <small style="color:#6c757d;font-size:0.78rem;">
             Didn't receive?
-            <button type="submit" formnovalidate
-            onclick="document.querySelector('input[name=otp]').value='';"
+            <button type="submit" name="auth_action" value="resend" formnovalidate
               style="background:none;border:none;color:#C0392B;font-weight:700;cursor:pointer;padding:0;font-family:inherit;font-size:inherit;">
               Resend OTP
             </button>
           </small>
         </div>
-        <button type="submit" class="btn-primary-wtf">VERIFY OTP →</button>
         {% else %}
-        <button type="submit" class="btn-primary-wtf">SEND OTP →</button>
+        <button type="submit" name="auth_action" value="send" class="btn-primary-wtf">SEND OTP →</button>
         {% endif %}
 
       </form>
