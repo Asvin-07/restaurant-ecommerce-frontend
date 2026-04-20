@@ -1,11 +1,9 @@
 """
 api_service.py — Centralized API service layer for Way To Food (WTF)
 
-DEMO MODE: When the real backend is unavailable (ConnectionError),
-all functions automatically fall back to realistic mock data so the
-full UI can be demonstrated without a backend.
+DEMO MODE: When the real backend is unavailable.
 
-To disable demo mode when your backend is ready, set in settings.py:
+To disable demo mode set in settings.py:
     API_BASE_URL = "http://your-backend.com/api"
     DEMO_MODE = False
 """
@@ -15,18 +13,22 @@ import uuid
 import datetime
 from django.conf import settings
 
-# ─── Configuration ────────────────────────────────────────────────────────────
-API_BASE        = getattr(settings, "API_BASE_URL", "http://localhost:8000/api")
+#----- Configuration ------
+API_BASE        = "https://test.lazzatt.com"
+IMAGE_BASE      = "https://test.lazzatt.com/"
 REQUEST_TIMEOUT = 10
-DEMO_MODE       = getattr(settings, "DEMO_MODE", True)
+DEMO_MODE       = False
+
+# API_BASE        = getattr(settings, "API_BASE_URL", "http://localhost:8000/api")
+# REQUEST_TIMEOUT = 10
+# DEMO_MODE       = getattr(settings, "DEMO_MODE", True)
 
 
-# ─── HTTP Helpers ─────────────────────────────────────────────────────────────
+#----- HTTP Helpers -----
 # These return None on ConnectionError/Timeout to signal "use mock data instead"
 
 def _auth_headers(token):
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-
 
 def _safe_error(resp):
     try:
@@ -38,7 +40,6 @@ def _safe_error(resp):
         return "An error occurred. Please try again."
     except Exception:
         return f"Server returned status {resp.status_code}."
-
 
 def _get(url, token=None, params=None):
     if DEMO_MODE:
@@ -54,19 +55,37 @@ def _get(url, token=None, params=None):
     except Exception:
         return {"ok": False, "error": "An unexpected error occurred."}
 
-def _post(url, payload, token=None):
-    if DEMO_MODE:
-        return None
-    headers = _auth_headers(token) if token else {"Content-Type": "application/json"}
+def _post(url, payload):
+    """Send POST request to Lazzatt API. All Lazzatt endpoints use POST."""
+    headers = {"Content-Type": "application/json"}
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
         if resp.status_code in (200, 201):
-            return {"ok": True, "data": resp.json()}
-        return {"ok": False, "error": _safe_error(resp), "status": resp.status_code}
+            data = resp.json()
+            # Lazzatt wraps all responses in {Success, Message, Data}
+            if data.get("Success") == True:
+                return {"ok": True, "data": data.get("Data", data)}
+            else:
+                return {"ok": False, "error": data.get("Message", "Request failed.")}
+        return {"ok": False, "error": f"Server error {resp.status_code}"}
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return None  # ← signals: fall back to mock data
-    except Exception:
+        return {"ok": False, "error": "Could not connect to server. Please try again."}
+    except Exception as e:
         return {"ok": False, "error": "An unexpected error occurred."}
+
+# def _post(url, payload, token=None):
+#     if DEMO_MODE:
+#         return None
+#     headers = _auth_headers(token) if token else {"Content-Type": "application/json"}
+#     try:
+#         resp = requests.post(url, json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
+#         if resp.status_code in (200, 201):
+#             return {"ok": True, "data": resp.json()}
+#         return {"ok": False, "error": _safe_error(resp), "status": resp.status_code}
+#     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+#         return None  # ← signals: fall back to mock data
+#     except Exception:
+#         return {"ok": False, "error": "An unexpected error occurred."}
 
 def _put(url, payload, token):
     if DEMO_MODE:
@@ -94,11 +113,36 @@ def _delete(url, token):
     except Exception:
         return {"ok": False, "error": "An unexpected error occurred."}
 
-# ═════════════════════════════════════════════════════════════════════════════
-# MOCK DATA — Edit this section to customize your demo
-# ═════════════════════════════════════════════════════════════════════════════
+# ---- RESPONSE MAPPERS — Convert Lazzatt field names to internal format ------
+# Templates and views use the internal format and never change
 
-# ── STEP 1: Edit your categories here ────────────────────────────────────────
+def _build_image_url(raw_image):
+    """Convert Lazzatt's partial image path to a full URL."""
+    if not raw_image or not raw_image.strip():
+        return ""
+    return IMAGE_BASE + raw_image.strip()
+
+def _map_product(item):
+    """Convert one Lazzatt product object to our internal format."""
+    return {
+        "id":            str(item.get("ProductId", "")),
+        "name":          item.get("ProductName", ""),
+        "description":   item.get("Description", "").strip(),
+        "price":         float(item.get("ProductRate", 0)),
+        "image":         _build_image_url(item.get("ProductImage", "")),
+        "is_veg":        item.get("IsVeg", True),
+        "is_available":  not item.get("IsOutOfStock", False),
+        "category":      str(item.get("CuisineType", "")),
+        "category_name": "",   # filled in by get_categories() later
+        "is_bestseller": item.get("IsBestseller", False),
+        "is_chef_recommended": item.get("ChefRecommended", False),
+        "is_newly_added": item.get("NewlyAdded", False),
+        "rating":        None,   # Lazzatt API doesn't provide ratings
+        "review_count":  None,
+    }
+
+#------- MOCK DATA --------
+
 _MOCK_CATEGORIES = [
     {"id": "1", "name": "🍕 Starters"},
     {"id": "2", "name": "🍛 Main Course"},
@@ -109,8 +153,9 @@ _MOCK_CATEGORIES = [
     {"id": "7", "name": "🥤 Drinks"},
 ]
 
-# ── STEP 2: Edit your menu items here ────────────────────────────────────────
-# Fields explained:
+# ------- Menu Items -------
+"""
+Fields explained:
 #   id            → unique string, no duplicates
 #   name          → dish name shown on card
 #   description   → short description shown on card
@@ -122,6 +167,7 @@ _MOCK_CATEGORIES = [
 #   rating        → optional star rating (e.g. 4.5)
 #   review_count  → optional number of reviews
 #   image         → optional image URL, leave "" for placeholder emoji
+"""
 
 _MOCK_ITEMS = [
 
@@ -288,13 +334,11 @@ _MOCK_CARTS = {}
 # Order store: { token: [ order_dict, ... ] }
 _MOCK_ORDERS = {}
 
-
-# ── Internal helpers ──────────────────────────────────────────────────────────
+# ── Internal helpers ----
 
 def _get_item_by_id(item_id):
     """Find a mock item by its id."""
     return next((i for i in _MOCK_ITEMS if i["id"] == str(item_id)), None)
-
 
 def _build_cart_response(token):
     """Build a cart response dict from the in-memory cart store."""
@@ -323,10 +367,8 @@ def _build_cart_response(token):
         "total":    total,
     }
 
-
 def _mock_token():
     return "demo-token-" + str(uuid.uuid4())[:8]
-
 
 # ═════════════════════════════════════════════════════════════════════════════
 # API Functions — each tries real API first, falls back to mock on failure
@@ -442,48 +484,84 @@ def get_categories(token=None):
     # DEMO FALLBACK
     return {"ok": True, "data": _MOCK_CATEGORIES}
 
-
 def get_menu_items(token=None, category_id=None, search=None):
-    """GET /menu/items/?category=&search="""
-    params = {}
-    if category_id:
-        params["category"] = category_id
+    """Fetch menu items from Lazzatt API."""
+    # Use search endpoint if user typed something
     if search:
-        params["search"] = search
+        result = _post(f"{API_BASE}/Api/GetSearchProduct", {
+            "SearchName": search,
+            "CustomerId": 0
+        })
+        if result["ok"]:
+            return {"ok": True, "data": [_map_product(p) for p in result["data"]]}
+        return {"ok": False, "error": result.get("error", "Search failed.")}
 
-    result = _get(f"{API_BASE}/menu/items/", token=token, params=params)
-    if result is not None:
+    # Otherwise fetch all products
+    result = _post(f"{API_BASE}/Api/GetProduct", {
+        "VeganType": "0",
+        "CuisineType": "1"
+    })
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK — filter mock items locally
-    items = _MOCK_ITEMS[:]
-    if category_id:
-        items = [i for i in items if i["category"] == str(category_id)]
-    if search:
-        s = search.lower()
-        items = [
-            i for i in items
-            if s in i["name"].lower()
-            or s in i["description"].lower()
-            or s in i["category_name"].lower()
-        ]
+    items = [_map_product(p) for p in result["data"]]
     return {"ok": True, "data": items}
 
+# def get_menu_items(token=None, category_id=None, search=None):
+#     """GET /menu/items/?category=&search="""
+#     params = {}
+#     if category_id:
+#         params["category"] = category_id
+#     if search:
+#         params["search"] = search
+
+#     result = _get(f"{API_BASE}/menu/items/", token=token, params=params)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK — filter mock items locally
+#     items = _MOCK_ITEMS[:]
+#     if category_id:
+#         items = [i for i in items if i["category"] == str(category_id)]
+#     if search:
+#         s = search.lower()
+#         items = [
+#             i for i in items
+#             if s in i["name"].lower()
+#             or s in i["description"].lower()
+#             or s in i["category_name"].lower()
+#         ]
+#     return {"ok": True, "data": items}
 
 def get_menu_item_detail(item_id, token=None):
-    """GET /menu/items/{id}/"""
-    result = _get(f"{API_BASE}/menu/items/{item_id}/", token=token)
-    if result is not None:
+    """Fetch a single product by ID — Lazzatt doesn't have a single-item endpoint,
+    so we fetch all and filter. Not ideal but works for now."""
+    result = _post(f"{API_BASE}/Api/GetProduct", {
+        "VeganType": "0",
+        "CuisineType": "1"
+    })
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    item = _get_item_by_id(item_id)
-    if item:
-        return {"ok": True, "data": item}
+    for raw_item in result["data"]:
+        if str(raw_item.get("ProductId")) == str(item_id):
+            return {"ok": True, "data": _map_product(raw_item)}
+
     return {"ok": False, "error": "Item not found."}
 
+# def get_menu_item_detail(item_id, token=None):
+#     """GET /menu/items/{id}/"""
+#     result = _get(f"{API_BASE}/menu/items/{item_id}/", token=token)
+#     if result is not None:
+#         return result
 
-# ── Cart ──────────────────────────────────────────────────────────────────────
+#     # DEMO FALLBACK
+#     item = _get_item_by_id(item_id)
+#     if item:
+#         return {"ok": True, "data": item}
+#     return {"ok": False, "error": "Item not found."}
+
+# --- Cart ------
 
 def get_cart(token):
     """GET /cart/"""
@@ -493,7 +571,6 @@ def get_cart(token):
 
     # DEMO FALLBACK
     return {"ok": True, "data": _build_cart_response(token)}
-
 
 def add_to_cart(token, item_id, quantity, special_instructions=""):
     """POST /cart/add/"""
@@ -532,7 +609,6 @@ def add_to_cart(token, item_id, quantity, special_instructions=""):
 
     return {"ok": True, "data": _build_cart_response(token)}
 
-
 def update_cart_item(token, cart_item_id, quantity):
     """PUT /cart/items/{id}/"""
     result = _put(
@@ -550,7 +626,6 @@ def update_cart_item(token, cart_item_id, quantity):
         return {"ok": True, "data": _build_cart_response(token)}
     return {"ok": False, "error": "Cart item not found."}
 
-
 def remove_cart_item(token, cart_item_id):
     """DELETE /cart/items/{id}/"""
     result = _delete(f"{API_BASE}/cart/items/{cart_item_id}/", token=token)
@@ -562,7 +637,6 @@ def remove_cart_item(token, cart_item_id):
     cart.pop(cart_item_id, None)
     return {"ok": True, "data": _build_cart_response(token)}
 
-
 def clear_cart(token):
     """DELETE /cart/"""
     result = _delete(f"{API_BASE}/cart/", token=token)
@@ -573,8 +647,7 @@ def clear_cart(token):
     _MOCK_CARTS[token] = {}
     return {"ok": True, "data": _build_cart_response(token)}
 
-
-# ── Orders ────────────────────────────────────────────────────────────────────
+# --- Orders ---
 
 def place_order(token, delivery_address, special_note=""):
     """POST /orders/"""
@@ -619,7 +692,6 @@ def place_order(token, delivery_address, special_note=""):
 
     return {"ok": True, "data": order}
 
-
 def get_orders(token):
     """GET /orders/"""
     result = _get(f"{API_BASE}/orders/", token=token)
@@ -658,10 +730,9 @@ def get_orders(token):
                 "delivery_address": "12, MG Road, Bengaluru",
             },
         ]
-        # ── End of sample orders ──────────────────────────────────────────
+        # ---- End of sample orders ----
 
     return {"ok": True, "data": orders}
-
 
 def get_order_detail(token, order_id):
     """GET /orders/{id}/"""
@@ -707,8 +778,7 @@ def get_order_detail(token, order_id):
         return {"ok": True, "data": _demo_orders[str(order_id)]}
     return {"ok": False, "error": "Order not found."}
 
-
-# ── Payment ───────────────────────────────────────────────────────────────────
+# ---- Payment ----
 
 def initiate_payment(token, order_id):
     """POST /payments/initiate/"""
@@ -723,7 +793,6 @@ def initiate_payment(token, order_id):
         "payment_url": None,     # None = no redirect, goes to confirmation page
         "order_id":    order_id,
     }}
-
 
 def get_payment_status(token, payment_id):
     """GET /payments/{id}/status/"""
