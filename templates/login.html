@@ -43,7 +43,13 @@
             required {% if otp_sent %}readonly{% endif %}oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         </div>
 
-        {% if otp_sent %}
+        <div style="margin-bottom:1.5rem;">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn-primary-wtf">LOGIN →</button>
+
+        <!-- {% if otp_sent %}
         <input type="hidden" name="otp_sent" value="True">
         <div style="margin-bottom:1.5rem;">
           <label class="form-label">Enter OTP</label>
@@ -62,7 +68,7 @@
         </div>
         {% else %}
         <button type="submit" name="auth_action" value="send" class="btn-primary-wtf">SEND OTP →</button>
-        {% endif %}
+        {% endif %} -->
 
       </form>
     </div>

@@ -116,22 +116,40 @@ def login_view(request):
             next_url = request.POST.get("next") or request.GET.get("next", "")
             return render(request, "login.html", {"next_url": next_url})
 
-        # Step 1 — phone submitted, no OTP yet → send OTP
-        if not otp:
-            result = api.send_otp(phone=phone)
-            if result["ok"]:
-                is_resend = action == "resend" or request.POST.get("otp_sent") == "True"
-                msg = f"A new OTP has been sent to {phone}" if is_resend else f"OTP sent to {phone}"
-                messages.success(request, msg)
-                next_url = request.POST.get("next") or request.GET.get("next", "")
-                return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
-            else:
-                messages.error(request, result.get("error", "Could not send OTP."))
-                next_url = request.POST.get("next") or request.GET.get("next", "")
-                return render(request, "login.html", {"next_url": next_url})
+        if request.method == "POST":
+            phone    = request.POST.get("phone", "").strip()
+            password = request.POST.get("password", "").strip()
+            next_url = request.POST.get("next") or request.GET.get("next", "menu")
 
-        # Step 2 — OTP submitted → verify and login
-        result = api.verify_otp(phone=phone, otp=otp)
+        if not phone or not password:
+            messages.error(request, "Please enter both mobile number and password.")
+            return render(request, "login.html", {"next_url": next_url})
+
+        result = api.login(phone=phone, password=password)
+        if result["ok"]:
+            data = result["data"]
+            _set_session(request, token=data.get("token"), user=data.get("user", {}))
+            return redirect(next_url)
+        else:
+            messages.error(request, result.get("error", "Login failed. Please try again."))
+            return render(request, "login.html", {"phone": phone, "next_url": next_url})
+
+        # # Step 1 — phone submitted, no OTP yet → send OTP
+        # if not otp:
+        #     result = api.send_otp(phone=phone)
+        #     if result["ok"]:
+        #         is_resend = action == "resend" or request.POST.get("otp_sent") == "True"
+        #         msg = f"A new OTP has been sent to {phone}" if is_resend else f"OTP sent to {phone}"
+        #         messages.success(request, msg)
+        #         next_url = request.POST.get("next") or request.GET.get("next", "")
+        #         return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
+        #     else:
+        #         messages.error(request, result.get("error", "Could not send OTP."))
+        #         next_url = request.POST.get("next") or request.GET.get("next", "")
+        #         return render(request, "login.html", {"next_url": next_url})
+
+        # # Step 2 — OTP submitted → verify and login
+        # result = api.verify_otp(phone=phone, otp=otp)
         if result["ok"]:
             data = result["data"]
             _set_session(request, token=data.get("token"), user=data.get("user", {}))

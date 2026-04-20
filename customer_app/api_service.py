@@ -140,6 +140,32 @@ def _map_product(item):
         "rating":        None,   # Lazzatt API doesn't provide ratings
         "review_count":  None,
     }
+    
+def _map_cart_item(item):
+    """Convert one Lazzatt cart item to our internal format."""
+    return {
+        "id":                   str(item.get("CartDetailID", "")),  # Server-assigned ID
+        "item_id":              str(item.get("ProductID", "")),
+        "name":                 item.get("ProductName", ""),
+        "unit_price":           float(item.get("ProductRate", 0)),
+        "discounted_price":     float(item.get("Amount", 0)),
+        "quantity":             int(item.get("Quantity", 1)),
+        "total_price":          round(float(item.get("Amount", 0)) * int(item.get("Quantity", 1)), 2),
+        "image":                _build_image_url(item.get("ProductImage", "")),
+        "is_veg":               item.get("IsVeg", True),
+        "special_instructions": "",  # Lazzatt doesn't store this field
+    }
+
+def _build_cart_from_api(raw):
+    """Build our internal cart dict from the full GetCartList response."""
+    items = [_map_cart_item(i) for i in raw.get("Data", [])]
+    return {
+        "items":    items,
+        "subtotal": float(raw.get("SubTotal", 0)),
+        "tax":      round(float(raw.get("SGST", 0)) + float(raw.get("CGST", 0)), 2),
+        "discount": float(raw.get("TotalDiscount", 0)),
+        "total":    float(raw.get("TotalBill", 0)),
+    }
 
 #------- MOCK DATA --------
 
@@ -171,7 +197,7 @@ Fields explained:
 
 _MOCK_ITEMS = [
 
-    # ── Starters ──
+    # ---- Starters ----
     {
         "id": "101", "name": "Paneer Tikka",
         "description": "Succulent paneer marinated in spiced yogurt, grilled to perfection in a tandoor.",
@@ -197,7 +223,7 @@ _MOCK_ITEMS = [
         "is_veg": True, "is_available": True, "rating": 4.3, "review_count": 65, "image": "",
     },
 
-    # ── Main Course ──
+    # --- Main Course ---
     {
         "id": "201", "name": "Butter Chicken",
         "description": "Tender chicken in a rich, creamy tomato-butter gravy — India's most loved dish.",
@@ -229,7 +255,7 @@ _MOCK_ITEMS = [
         "is_veg": False, "is_available": True, "rating": 4.9, "review_count": 278, "image": "",
     },
 
-    # ── Breads ──
+    # ---- Breads ----
     {
         "id": "301", "name": "Garlic Naan",
         "description": "Fluffy leavened bread slathered with garlic butter, baked in a clay oven.",
@@ -249,7 +275,7 @@ _MOCK_ITEMS = [
         "is_veg": True, "is_available": True, "rating": 4.5, "review_count": 167, "image": "",
     },
 
-    # ── Rice & Biryani ──
+    # --- Rice & Biryani ---
     {
         "id": "401", "name": "Veg Biryani",
         "description": "Fragrant basmati rice layered with seasonal vegetables and whole spices.",
@@ -269,7 +295,7 @@ _MOCK_ITEMS = [
         "is_veg": True, "is_available": True, "rating": 4.2, "review_count": 98, "image": "",
     },
     
-    # ── Salads ──
+    # --- Salads ---
     {
         "id": "501", "name": "Garden Fresh Salad",
         "description": "Crisp lettuce, cucumber, tomatoes and carrots tossed in a light lemon dressing.",
@@ -283,7 +309,7 @@ _MOCK_ITEMS = [
         "is_veg": True, "is_available": True, "rating": 4.3, "review_count": 67, "image": "",
     },
 
-    # ── Desserts ──
+    # ---- Desserts ----
     {
         "id": "601", "name": "Gulab Jamun",
         "description": "Soft milk-solid dumplings soaked in rose-flavoured sugar syrup. Served warm.",
@@ -324,9 +350,7 @@ _MOCK_ITEMS = [
     },
 ]
 
-# ═════════════════════════════════════════════════════════════════════════════
-# In-memory stores (resets on server restart — fine for demo)
-# ═════════════════════════════════════════════════════════════════════════════
+# ----- In-memory stores (resets on server restart — fine for demo) -----
 
 # Cart store: { token: { cart_item_id: { id, item_id, name, unit_price, quantity, ... } } }
 _MOCK_CARTS = {}
@@ -334,7 +358,7 @@ _MOCK_CARTS = {}
 # Order store: { token: [ order_dict, ... ] }
 _MOCK_ORDERS = {}
 
-# ── Internal helpers ----
+# ---- Internal helpers ----
 
 def _get_item_by_id(item_id):
     """Find a mock item by its id."""
@@ -370,34 +394,60 @@ def _build_cart_response(token):
 def _mock_token():
     return "demo-token-" + str(uuid.uuid4())[:8]
 
-# ═════════════════════════════════════════════════════════════════════════════
-# API Functions — each tries real API first, falls back to mock on failure
-# ═════════════════════════════════════════════════════════════════════════════
+# --- API Functions — each tries real API first, falls back to mock on failure ---
 
-# ── Authentication ────────────────────────────────────────────────────────────
+# ---- Authentication ----
+
+# def login(phone, password=None):
+#     """POST /auth/login/"""
+#     payload = {"phone": phone}
+#     if password:
+#         payload["password"] = password
+
+#     result = _post(f"{API_BASE}/auth/login/", payload)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK — accepts any credentials
+#     token = _mock_token()
+#     return {"ok": True, "data": {
+#         "token": token,
+#         "user": {
+#             "id":    "demo-001",
+#             "name":  "Demo Customer",
+#             "phone": phone,
+#             "email": "demo@waytofood.com",
+#         }
+#     }}
 
 def login(phone, password=None):
-    """POST /auth/login/"""
-    payload = {"phone": phone}
-    if password:
-        payload["password"] = password
+    """Login via Lazzatt /Api/Login endpoint."""
+    result = _post(f"{API_BASE}/Api/Login", {
+        "CustomerMobile": phone,
+        "Password": password or "",
+        "AuthenticationType": 0
+    })
 
-    result = _post(f"{API_BASE}/auth/login/", payload)
-    if result is not None:
+    if not result["ok"]:
+        # result["error"] already has the Message from Lazzatt
         return result
 
-    # DEMO FALLBACK — accepts any credentials
-    token = _mock_token()
+    raw = result["data"]
+    customer_id = raw.get("CustomerId", 0)
+
+    # Check — even if Success=true, CustomerId=0 means something is wrong
+    if not customer_id:
+        return {"ok": False, "error": "Login failed. Please check your credentials."}
+
     return {"ok": True, "data": {
-        "token": token,
+        "token": str(customer_id),   # CustomerId as  session token
         "user": {
-            "id":    "demo-001",
-            "name":  "Demo Customer",
-            "phone": phone,
-            "email": "demo@waytofood.com",
+            "id":    str(customer_id),
+            "name":  raw.get("CustomerName", "").strip(),
+            "phone": raw.get("CustomerMobile", "").strip(),
+            "email": raw.get("Email", "").strip(),
         }
     }}
-
 
 def register(name, phone, email, password):
     """POST /auth/register/"""
@@ -419,7 +469,6 @@ def register(name, phone, email, password):
         }
     }}
 
-
 def get_profile(token):
     """GET /auth/profile/"""
     result = _get(f"{API_BASE}/auth/profile/", token=token)
@@ -435,7 +484,6 @@ def get_profile(token):
         "default_address": "12, MG Road, Bengaluru, Karnataka - 560001",
     }}
 
-
 def update_profile(token, data):
     """PUT /auth/profile/"""
     result = _put(f"{API_BASE}/auth/profile/", data, token=token)
@@ -445,8 +493,6 @@ def update_profile(token, data):
     # DEMO FALLBACK
     return {"ok": True, "data": {"user": {**data, "id": "demo-001"}}}
 
-
-
 def send_otp(phone):
     """POST /auth/send-otp/"""
     result = _post(f"{API_BASE}/auth/send-otp/", {"phone": phone})
@@ -454,7 +500,6 @@ def send_otp(phone):
         return result
     # DEMO FALLBACK — pretend OTP was sent
     return {"ok": True, "data": {"message": "OTP sent successfully"}}
-
 
 def verify_otp(phone, otp):
     """POST /auth/verify-otp/"""
@@ -473,16 +518,31 @@ def verify_otp(phone, otp):
         }
     }}
 
-# ── Menu & Categories ─────────────────────────────────────────────────────────
+# ---- Menu & Categories ----
+
+# def get_categories(token=None):
+#     """GET /menu/categories/"""
+#     result = _get(f"{API_BASE}/menu/categories/", token=token)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK
+#     return {"ok": True, "data": _MOCK_CATEGORIES}
 
 def get_categories(token=None):
-    """GET /menu/categories/"""
-    result = _get(f"{API_BASE}/menu/categories/", token=token)
-    if result is not None:
+    """Fetch product categories from Lazzatt."""
+    result = _post(f"{API_BASE}/Api/GetProductType", {})
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    return {"ok": True, "data": _MOCK_CATEGORIES}
+    categories = [
+        {
+            "id":   str(cat["ProductTypeID"]),
+            "name": cat["ProductTypeName"]
+        }
+        for cat in result["data"]
+    ]
+    return {"ok": True, "data": categories}
 
 def get_menu_items(token=None, category_id=None, search=None):
     """Fetch menu items from Lazzatt API."""
@@ -563,79 +623,177 @@ def get_menu_item_detail(item_id, token=None):
 
 # --- Cart ------
 
+def _post_full(url, payload):
+    """
+    Same as _post() but returns the FULL response body, not just Data.
+    Needed for endpoints like GetCartList where totals are at the top level.
+    """
+    headers = {"Content-Type": "application/json"}
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
+        if resp.status_code in (200, 201):
+            data = resp.json()
+            if data.get("Success") == True:
+                return {"ok": True, "data": data}   # Return full response, not just Data
+            else:
+                return {"ok": False, "error": data.get("Message", "Request failed.")}
+        return {"ok": False, "error": f"Server error {resp.status_code}"}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        return {"ok": False, "error": "Could not connect to server. Please try again."}
+    except Exception:
+        return {"ok": False, "error": "An unexpected error occurred."}
+
 def get_cart(token):
-    """GET /cart/"""
-    result = _get(f"{API_BASE}/cart/", token=token)
-    if result is not None:
+    """Fetch cart for logged-in user using CustomerID."""
+    if not token or token.startswith("guest-"):
+        # Guest users have no server-side cart — return empty
+        return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
+
+    result = _post_full(f"{API_BASE}/Api/GetCartList", {
+        "CustomerID": token,
+        "IsRedeemPoint": False
+    })
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    return {"ok": True, "data": _build_cart_response(token)}
+    return {"ok": True, "data": _build_cart_from_api(result["data"])}
+
+# def get_cart(token):
+#     """GET /cart/"""
+#     result = _get(f"{API_BASE}/cart/", token=token)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK
+#     return {"ok": True, "data": _build_cart_response(token)}
+
+# def add_to_cart(token, item_id, quantity, special_instructions=""):
+#     """POST /cart/add/"""
+#     result = _post(f"{API_BASE}/cart/add/", {
+#         "item_id": item_id,
+#         "quantity": quantity,
+#         "special_instructions": special_instructions,
+#     }, token=token)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK
+#     item = _get_item_by_id(item_id)
+#     if not item:
+#         return {"ok": False, "error": "Item not found."}
+
+#     cart = _MOCK_CARTS.setdefault(token, {})
+
+#     # If item already in cart, increase quantity
+#     existing = next((ci for ci in cart.values() if ci["item_id"] == str(item_id)), None)
+#     if existing:
+#         existing["quantity"] += quantity
+#         if special_instructions:
+#             existing["special_instructions"] = special_instructions
+#     else:
+#         cart_item_id = str(uuid.uuid4())[:8]
+#         cart[cart_item_id] = {
+#             "id":                   cart_item_id,
+#             "item_id":              str(item_id),
+#             "name":                 item["name"],
+#             "unit_price":           item["price"],
+#             "quantity":             quantity,
+#             "special_instructions": special_instructions,
+#             "image":                item.get("image", ""),
+#         }
+
+#     return {"ok": True, "data": _build_cart_response(token)}
 
 def add_to_cart(token, item_id, quantity, special_instructions=""):
-    """POST /cart/add/"""
-    result = _post(f"{API_BASE}/cart/add/", {
-        "item_id": item_id,
-        "quantity": quantity,
-        "special_instructions": special_instructions,
-    }, token=token)
-    if result is not None:
+    """Add item to cart. Requires logged-in user (CustomerID)."""
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Please log in to add items to cart."}
+
+    # First we need the item price — fetch it from the product list
+    # Lazzatt's AddToCart needs the Amount (price) in the body
+    product_result = _post(f"{API_BASE}/Api/GetProduct", {
+        "VeganType": "0",
+        "CuisineType": "1"
+    })
+
+    item_price = 0
+    if product_result["ok"]:
+        for p in product_result["data"]:
+            if str(p.get("ProductId")) == str(item_id):
+                item_price = float(p.get("ProductRate", 0))
+                break
+
+    result = _post(f"{API_BASE}/Api/AddToCart", {
+        "CustomerID": token,
+        "Quantity":   str(quantity),
+        "ProductID":  str(item_id),
+        "Amount":     item_price
+    })
+
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    item = _get_item_by_id(item_id)
-    if not item:
-        return {"ok": False, "error": "Item not found."}
-
-    cart = _MOCK_CARTS.setdefault(token, {})
-
-    # If item already in cart, increase quantity
-    existing = next((ci for ci in cart.values() if ci["item_id"] == str(item_id)), None)
-    if existing:
-        existing["quantity"] += quantity
-        if special_instructions:
-            existing["special_instructions"] = special_instructions
-    else:
-        cart_item_id = str(uuid.uuid4())[:8]
-        cart[cart_item_id] = {
-            "id":                   cart_item_id,
-            "item_id":              str(item_id),
-            "name":                 item["name"],
-            "unit_price":           item["price"],
-            "quantity":             quantity,
-            "special_instructions": special_instructions,
-            "image":                item.get("image", ""),
-        }
-
-    return {"ok": True, "data": _build_cart_response(token)}
+    # Return updated cart after adding
+    return get_cart(token)
 
 def update_cart_item(token, cart_item_id, quantity):
-    """PUT /cart/items/{id}/"""
-    result = _put(
-        f"{API_BASE}/cart/items/{cart_item_id}/",
-        {"quantity": quantity},
-        token=token
-    )
-    if result is not None:
+    """Update quantity of a cart item using CartDetailID."""
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Please log in."}
+
+    result = _post(f"{API_BASE}/Api/UpdateCart", {
+        "CustomerID":   token,
+        "CartDetailID": str(cart_item_id),
+        "Quantity":     str(quantity)
+    })
+
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    cart = _MOCK_CARTS.get(token, {})
-    if cart_item_id in cart:
-        cart[cart_item_id]["quantity"] = quantity
-        return {"ok": True, "data": _build_cart_response(token)}
-    return {"ok": False, "error": "Cart item not found."}
+    return get_cart(token)
+
+# def update_cart_item(token, cart_item_id, quantity):
+#     """PUT /cart/items/{id}/"""
+#     result = _put(
+#         f"{API_BASE}/cart/items/{cart_item_id}/",
+#         {"quantity": quantity},
+#         token=token
+#     )
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK
+#     cart = _MOCK_CARTS.get(token, {})
+#     if cart_item_id in cart:
+#         cart[cart_item_id]["quantity"] = quantity
+#         return {"ok": True, "data": _build_cart_response(token)}
+#     return {"ok": False, "error": "Cart item not found."}
 
 def remove_cart_item(token, cart_item_id):
-    """DELETE /cart/items/{id}/"""
-    result = _delete(f"{API_BASE}/cart/items/{cart_item_id}/", token=token)
-    if result is not None:
+    """Remove a cart item using CartDetailID."""
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Please log in."}
+
+    result = _post(f"{API_BASE}/Api/RemoveCart", {
+        "CustomerID":   token,
+        "CartDetailID": str(cart_item_id)
+    })
+
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    cart = _MOCK_CARTS.get(token, {})
-    cart.pop(cart_item_id, None)
-    return {"ok": True, "data": _build_cart_response(token)}
+    return get_cart(token)
+
+# def remove_cart_item(token, cart_item_id):
+#     """DELETE /cart/items/{id}/"""
+#     result = _delete(f"{API_BASE}/cart/items/{cart_item_id}/", token=token)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK
+#     cart = _MOCK_CARTS.get(token, {})
+#     cart.pop(cart_item_id, None)
+#     return {"ok": True, "data": _build_cart_response(token)}
 
 def clear_cart(token):
     """DELETE /cart/"""
