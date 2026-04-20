@@ -1,0 +1,11 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/UpdateFCMToken
+method: POST
+body:
+  type: json
+  content: " {\"FCMToken\": \"dd\",\r
+
+    \ \"CustomerId\":6152\r
+
+    \    }"
+order: 27000

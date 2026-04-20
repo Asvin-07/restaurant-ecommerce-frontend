@@ -1,0 +1,7 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetLoyaltyProgram
+method: POST
+body:
+  type: text
+  content: " {\"CustomerId\": \"6152\"\r\n    }"
+order: 25000

@@ -1,0 +1,7 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetNearestAddresses
+method: POST
+body:
+  type: json
+  content: '{"CustomerID":"6152"}'
+order: 4000

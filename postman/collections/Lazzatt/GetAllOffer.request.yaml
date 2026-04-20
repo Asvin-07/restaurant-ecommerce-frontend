@@ -1,0 +1,4 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetAllOffer
+method: POST
+order: 28000

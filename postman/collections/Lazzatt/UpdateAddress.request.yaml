@@ -1,0 +1,35 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/UpdateAddress
+method: POST
+body:
+  type: json
+  content: " {\"CustomerID\": \"6152\",\r
+
+    \    \"FriendlyName\": \"Akashhsg\",\r
+
+    \    \"Address1\": \"kursi road \",\r
+
+    \    \"Address2\": \"swarrop vihar \",\r
+
+    \    \"Landmark\": \"near dalela\",\r
+
+    \    \"PostalCode\": \"226021\",\r
+
+    \    \"AreaID\": \"1028\",\r
+
+    \    \"Latitude\":\"80.3214\",\r
+
+    \    \"Longitude\":\"80.4512\",\r
+
+    \    \"City\":\"Lucknow\",\r
+
+    \    \"State\":\"Uttar Prades\",\r
+
+    \    \"Country\":\"India\",\r
+
+    \    \"AddressType\":\"Home\",\r
+
+    \    \"AddressID\":45\r
+
+    \    }"
+order: 20000

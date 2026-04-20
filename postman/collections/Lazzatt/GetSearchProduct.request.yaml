@@ -1,0 +1,11 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetSearchProduct
+method: POST
+body:
+  type: json
+  content: " {\"SearchName\": \"dd\",\r
+
+    \ \"CustomerId\":6152\r
+
+    \    }"
+order: 26000

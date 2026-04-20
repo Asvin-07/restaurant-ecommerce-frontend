@@ -1,0 +1,25 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/UpdateProfile
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \r
+
+    \      \"CustomerName\":\"Akash\",\r
+
+    \      \"CustomerMobile\":\"7896541230\",\r
+
+    \      \"Email\":\"aash@gmail.com\",\r
+
+    \      \"CustomerDOB\": \"1\",\r
+
+    \      \"CustomerAnniversary\":\"19/05/2000\",\r
+
+    \      \"CustomerGender\":\"Male\"\r
+
+    \r
+
+    }"
+order: 11000

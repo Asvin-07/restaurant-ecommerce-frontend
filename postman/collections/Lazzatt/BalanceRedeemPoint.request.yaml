@@ -1,0 +1,13 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/BalanceRedeemPoint
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"CustomerId\":6152\r
+
+    \r
+
+    \    }"
+order: 33000

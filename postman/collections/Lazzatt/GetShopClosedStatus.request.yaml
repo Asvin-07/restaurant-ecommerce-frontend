@@ -1,0 +1,4 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetShopClosedStatus
+method: POST
+order: 34000

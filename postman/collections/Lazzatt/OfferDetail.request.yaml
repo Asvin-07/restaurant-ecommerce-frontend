@@ -1,0 +1,7 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/OfferDetail
+method: POST
+body:
+  type: json
+  content: '{"offerID":4}'
+order: 29000

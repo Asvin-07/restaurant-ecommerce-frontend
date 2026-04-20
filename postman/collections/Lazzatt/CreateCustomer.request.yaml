@@ -1,0 +1,19 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/CreateCustomer
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \r
+
+    \      \"CustomerName\":\"Akash\",\r
+
+    \      \"Email\":\"aash@gmail.com\",\r
+
+    \      \"AuthenticationType\": 1\r
+
+    \r
+
+    }"
+order: 10000

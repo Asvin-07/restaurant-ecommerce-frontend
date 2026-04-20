@@ -1,0 +1,21 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetPagerProduct
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \"VeganType\": 1,\r
+
+    \      \"CuisineType\": 1,\r
+
+    \      \"PageSize\": 5,\r
+
+    \      \"PageNumber\": 1,\r
+
+    \      'CustomerId': 6152,\r
+
+    \r
+
+    }"
+order: 9000

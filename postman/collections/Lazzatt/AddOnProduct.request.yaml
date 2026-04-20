@@ -1,0 +1,7 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/AddOnProduct
+method: POST
+body:
+  type: json
+  content: "{\r\n    \"ProductID\":\"12\"\r\n}"
+order: 14000

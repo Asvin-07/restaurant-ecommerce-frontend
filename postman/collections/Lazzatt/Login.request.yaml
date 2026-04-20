@@ -1,0 +1,13 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/Login
+method: POST
+body:
+  type: json
+  content: "{\"CustomerMobile\":\"6183\",\r
+
+    \"Password\":\"1234\",\r
+
+    \"AuthenticationType\":0\r
+
+    }"
+order: 1000

@@ -1,0 +1,15 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetProduct
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"VeganType\":\"0\",\r
+
+    \    \"CuisineType\":\"1\"\r
+
+    }"
+auth:
+  type: noauth
+order: 2000

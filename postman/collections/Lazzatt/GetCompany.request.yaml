@@ -1,0 +1,11 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetCompany
+method: POST
+body:
+  type: text
+  content: "{\"SaleBillID\":27866,\r
+
+    \"Remark\":\"ran away\"\r
+
+    }"
+order: 6000

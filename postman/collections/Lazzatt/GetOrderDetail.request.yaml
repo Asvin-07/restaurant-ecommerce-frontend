@@ -1,0 +1,7 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/GetOrderDetail
+method: POST
+body:
+  type: json
+  content: '{"CustomerId":6152}'
+order: 31000

@@ -1,0 +1,39 @@
+$kind: http-request
+url: https://test.lazzatt.com/Api/OrderPlaced
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"CustomerId\":6152,\r
+
+    \      \"AddressID\":45,\r
+
+    \      \"PaymentMethod\":2,\r
+
+    \      \"OrderType\":1,\r
+
+    \      \"IsRedeemPoint\":true,\r
+
+    \      \"Remarks\":\"test\",\r
+
+    \      \"DeliveryCharges\":1,\r
+
+    \      \"PorterOrderID\":25,\r
+
+    \      \"TrackingURL\":\"https//lazzatt.com\",\r
+
+    \      \"PickupTime\":\"21:12:06\",\r
+
+    \      \"RequestPorterOrderID\":25\r
+
+    \    \r
+
+    \    \r
+
+    \    \r
+
+    \    \r
+
+    \    }"
+order: 32000
