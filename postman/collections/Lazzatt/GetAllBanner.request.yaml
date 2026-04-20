@@ -1,4 +1,0 @@
-$kind: http-request
-url: https://test.lazzatt.com/Api/GetAllBanner
-method: POST
-order: 13000

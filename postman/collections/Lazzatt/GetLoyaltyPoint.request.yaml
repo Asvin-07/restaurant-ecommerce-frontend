@@ -1,7 +1,0 @@
-$kind: http-request
-url: https://test.lazzatt.com/Api/GetLoyaltyPoint
-method: POST
-body:
-  type: json
-  content: "{\r\n\r\n\"CustomerID\":6152\r\n\r\n}"
-order: 36000

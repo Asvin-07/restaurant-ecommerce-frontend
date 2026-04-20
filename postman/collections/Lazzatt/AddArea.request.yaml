@@ -1,7 +1,0 @@
-$kind: http-request
-url: https://test.lazzatt.com/Api/AddArea
-method: POST
-body:
-  type: json
-  content: '{"AreaName":"hazratganj"}'
-order: 7000
