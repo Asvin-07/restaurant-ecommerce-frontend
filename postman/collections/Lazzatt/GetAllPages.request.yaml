@@ -1,7 +1,0 @@
-$kind: http-request
-url: https://test.lazzatt.com/Api/GetAllPages
-method: POST
-body:
-  type: json
-  content: " {\"CustomerId\": \"6152\"\r\n    }"
-order: 24000
