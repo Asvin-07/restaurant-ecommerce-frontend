@@ -1,7 +1,3 @@
-"""
-Django settings for restaurant_core (Way To Food — WTF)
-"""
-
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -11,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Automatically load environment variables from the .env file
 load_dotenv(BASE_DIR / '.env')
 
-# ─── Security ─────────────────────────────────────────────────
+# --- Security ----
 # IMPORTANT: Replace with a strong secret key and set DEBUG=False in production.
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
@@ -25,12 +21,12 @@ if 'insecure' in SECRET_KEY:
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# ─── API Integration ───────────────────────────────────────────
+# --- API Integration ---
 # Set this to your backend's base URL (no trailing slash)
 # Override via environment variable: export API_BASE_URL=http://your-backend.com/api
 API_BASE_URL = os.environ.get('API_BASE_URL', 'http://localhost:9000/api')
 
-# ─── Installed Apps ────────────────────────────────────────────
+# --- Installed Apps ---
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -72,7 +68,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'restaurant_core.wsgi.application'
 
-# ─── Database ──────────────────────────────────────────────────
+# --- Database ----
 # Using SQLite for development (Django sessions require a DB)
 DATABASES = {
     'default': {
@@ -81,7 +77,7 @@ DATABASES = {
     }
 }
 
-# ─── Session Configuration ─────────────────────────────────────
+# --- Session Configuration ---
 # Auth tokens stored securely in server-side sessions
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400 * 7       # 7 days
@@ -89,12 +85,12 @@ SESSION_COOKIE_HTTPONLY = True        # Prevent JS access to session cookie
 SESSION_COOKIE_SAMESITE = 'Lax'      # CSRF protection
 # SESSION_COOKIE_SECURE = True        # Uncomment for HTTPS (production)
 
-# ─── Static Files ──────────────────────────────────────────────
+# --- Static Files ---
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'   # For production: run collectstatic
 
-# ─── Internationalization ──────────────────────────────────────
+# --- Internationalization ---
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
@@ -102,7 +98,7 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ─── Logging ───────────────────────────────────────────────────
+# --- Logging ---
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -117,6 +113,5 @@ LOGGING = {
     },
 }
 
-# ─── Demo Mode ─────────────────────────────────────────────
-# Set DEMO_MODE=False in environment when real backend is ready
-DEMO_MODE = os.environ.get('DEMO_MODE', 'True') == 'True'
+# --- Demo Mode ---
+DEMO_MODE = False

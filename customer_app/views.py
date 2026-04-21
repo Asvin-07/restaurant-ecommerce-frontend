@@ -161,14 +161,16 @@ def logout_view(request):
 
 def menu_view(request):
     """Public — no login required."""
-    token        = _get_token(request)   # None for guests — that's fine
+    token        = _get_token(request)   # None for guests
     search_query = request.GET.get("search", "")
+    selected_category = request.GET.get("category", "")
 
     cat_result   = api.get_categories(token=token)
     categories   = cat_result.get("data", []) if cat_result["ok"] else []
 
     items_result = api.get_menu_items(
         token=token,
+        category_id=selected_category or None,
         search=search_query or None
     )
     menu_items = items_result.get("data", []) if items_result["ok"] else []
@@ -179,7 +181,7 @@ def menu_view(request):
     return render(request, "menu.html", {
         "categories":        categories,
         "menu_items":        menu_items,
-        "selected_category": "",
+        "selected_category": selected_category,
         "search_query":      search_query,
         "cart_count":        _get_cart_count(request),
         "user":              _get_user(request),
@@ -198,7 +200,7 @@ def item_detail_view(request, item_id):
         "user":       _get_user(request),
     })
 
-# ---- Cart AJAX Views (work for guests too) ----
+# ---- Cart AJAX Views (works for guests) ----
 
 @require_http_methods(["POST"])
 def add_to_cart_view(request):

@@ -7,8 +7,7 @@ built as part of my B.Tech project at IIIT Vadodara.
 The app lets customers browse the menu, add items to cart, and place orders.
 It is built using Django and plain HTML/CSS/JS — no frontend framework.
 
-Currently using mock/demo data. Backend API integration will be done after midsem.
-
+Connected to the Lazzatt backend API. All menu, cart, and order data is live.
 ---
 
 ## How to Run
@@ -55,13 +54,6 @@ static/
     css/styles.css   ← all custom styles
     js/main.js       ← cart AJAX logic
 ```
-
----
-
-## Backend Integration (Pending — After Midsem)
-
-The real backend is a Lazzatt API. Integration will be done step by step
-by replacing the mock functions in api_service.py with real API calls.
 
 ---
 

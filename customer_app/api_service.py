@@ -10,34 +10,6 @@ IMAGE_BASE      = "https://test.lazzatt.com/"
 REQUEST_TIMEOUT = 10
 DEMO_MODE       = False
 
-def _auth_headers(token):
-    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-
-def _safe_error(resp):
-    try:
-        body = resp.json()
-        for field in ("message", "detail", "error", "non_field_errors"):
-            if field in body:
-                val = body[field]
-                return val[0] if isinstance(val, list) else str(val)
-        return "An error occurred. Please try again."
-    except Exception:
-        return f"Server returned status {resp.status_code}."
-
-def _get(url, token=None, params=None):
-    if DEMO_MODE:
-        return None
-    headers = _auth_headers(token) if token else {}
-    try:
-        resp = requests.get(url, headers=headers, params=params, timeout=REQUEST_TIMEOUT)
-        if resp.status_code == 200:
-            return {"ok": True, "data": resp.json()}
-        return {"ok": False, "error": _safe_error(resp), "status": resp.status_code}
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return None  # ← signals: fall back to mock data
-    except Exception:
-        return {"ok": False, "error": "An unexpected error occurred."}
-
 def _post(url, payload):
     """Send POST request to Lazzatt API. All Lazzatt endpoints use POST."""
     headers = {"Content-Type": "application/json"}
@@ -56,40 +28,13 @@ def _post(url, payload):
     except Exception as e:
         return {"ok": False, "error": "An unexpected error occurred."}
 
-def _put(url, payload, token):
-    if DEMO_MODE:
-        return None
-    try:
-        resp = requests.put(url, json=payload, headers=_auth_headers(token), timeout=REQUEST_TIMEOUT)
-        if resp.status_code in (200, 204):
-            return {"ok": True, "data": resp.json() if resp.content else {}}
-        return {"ok": False, "error": _safe_error(resp), "status": resp.status_code}
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return None
-    except Exception:
-        return {"ok": False, "error": "An unexpected error occurred."}
-
-def _delete(url, token):
-    if DEMO_MODE:
-        return None
-    try:
-        resp = requests.delete(url, headers=_auth_headers(token), timeout=REQUEST_TIMEOUT)
-        if resp.status_code in (200, 204):
-            return {"ok": True, "data": {}}
-        return {"ok": False, "error": _safe_error(resp), "status": resp.status_code}
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return None
-    except Exception:
-        return {"ok": False, "error": "An unexpected error occurred."}
-
-# ---- RESPONSE MAPPERS — Convert Lazzatt field names to internal format ------
-# Templates and views use the internal format and never change
-
 def _build_image_url(raw_image):
     """Convert Lazzatt's partial image path to a full URL."""
     if not raw_image or not raw_image.strip():
         return ""
     return IMAGE_BASE + raw_image.strip()
+
+# ---- RESPONSE MAPPERS — Convert Lazzatt field names to internal format ------
 
 def _map_product(item):
     """Convert one Lazzatt product object to our internal format."""
@@ -164,22 +109,6 @@ def _map_order(order):
         "item_count":     len(items),
         "delivery_address": "",
     }
-
-# ------- Menu Items -------
-"""
-Fields explained:
-#   id            → unique string, no duplicates
-#   name          → dish name shown on card
-#   description   → short description shown on card
-#   price         → price in rupees (number, not string)
-#   category      → must match an "id" from _MOCK_CATEGORIES above
-#   category_name → display name of category (can match name above)
-#   is_veg        → True = green dot, False = red dot
-#   is_available  → False = shows "Unavailable", Add button hidden
-#   rating        → optional star rating (e.g. 4.5)
-#   review_count  → optional number of reviews
-#   image         → optional image URL, leave "" for placeholder emoji
-"""
 
 def login(phone, password=None):
     """Login via Lazzatt /Api/Login endpoint."""
@@ -286,18 +215,26 @@ def get_menu_items(token=None, category_id=None, search=None):
             return {"ok": True, "data": [_map_product(p) for p in result["data"]]}
         return {"ok": False, "error": result.get("error", "Search failed.")}
 
-    result = _post(f"{API_BASE}/Api/GetProduct", {
-        "VeganType": "0",
-        "CuisineType": "1"
-    })
+    # Build payload — if category selected, use GetPagerProduct for that type
+    if category_id:
+        result = _post(f"{API_BASE}/Api/GetPagerProduct", {
+            "VeganType": 0,
+            "CuisineType": 1,
+            "PageSize": 100,
+            "PageNumber": 1,
+            "ProductTypeId": int(category_id)
+        })
+    else:
+        result = _post(f"{API_BASE}/Api/GetProduct", {
+            "VeganType": "0",
+            "CuisineType": "1"
+        })
+
     if not result["ok"]:
         return {"ok": False, "error": result.get("error", "Could not load menu.")}
 
     items = [_map_product(p) for p in result["data"]]
-
-    # Store in cache for 5 minutes so item_detail doesn't need to re-fetch
     cache.set("wtf_all_products", result["data"], timeout=300)
-
     return {"ok": True, "data": items}
 
 def get_menu_item_detail(item_id, token=None):
@@ -331,7 +268,7 @@ def get_menu_item_detail(item_id, token=None):
 
     return {"ok": False, "error": "Item not found."}
 
-# --- Cart ------
+# ---- Cart -----
 
 def _post_full(url, payload):
     """
@@ -375,17 +312,25 @@ def add_to_cart(token, item_id, quantity, special_instructions=""):
 
     # First we need the item price — fetch it from the product list
     # Lazzatt's AddToCart needs the Amount (price) in the body
-    product_result = _post(f"{API_BASE}/Api/GetProduct", {
-        "VeganType": "0",
-        "CuisineType": "1"
-    })
+    cached = cache.get("wtf_all_products")
+    raw_products = cached if cached else []
+
+    if not raw_products:
+        product_result = _post(f"{API_BASE}/Api/GetProduct", {
+            "VeganType": "0",
+            "CuisineType": "1"
+        })
+        if product_result["ok"]:
+            raw_products = product_result["data"]
+            cache.set("wtf_all_products", raw_products, timeout=300)
 
     item_price = 0
-    if product_result["ok"]:
-        for p in product_result["data"]:
-            if str(p.get("ProductId")) == str(item_id):
-                item_price = float(p.get("ProductRate", 0))
-                break
+    for p in raw_products:
+        if product_result["ok"]:
+            for p in product_result["data"]:
+                if str(p.get("ProductId")) == str(item_id):
+                    item_price = float(p.get("ProductRate", 0))
+                    break
 
     result = _post(f"{API_BASE}/Api/AddToCart", {
         "CustomerID": token,
@@ -560,14 +505,5 @@ def initiate_payment(token, order_id):
     }}
 
 def get_payment_status(token, payment_id):
-    """GET /payments/{id}/status/"""
-    result = _get(f"{API_BASE}/payments/{payment_id}/status/", token=token)
-    if result is not None:
-        return result
-
-    # DEMO FALLBACK — always return success
-    return {"ok": True, "data": {
-        "payment_id": payment_id,
-        "status":     "success",
-        "message":    "Payment successful (demo mode)",
-    }}
+    """Lazzatt handles payment externally — no status endpoint available."""
+    return {"ok": True, "data": {"status": "success"}}
