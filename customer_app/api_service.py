@@ -12,6 +12,7 @@ import requests
 import uuid
 import datetime
 from django.conf import settings
+from django.core.cache import cache
 
 #----- Configuration ------
 API_BASE        = "https://test.lazzatt.com"
@@ -22,7 +23,6 @@ DEMO_MODE       = False
 # API_BASE        = getattr(settings, "API_BASE_URL", "http://localhost:8000/api")
 # REQUEST_TIMEOUT = 10
 # DEMO_MODE       = getattr(settings, "DEMO_MODE", True)
-
 
 #----- HTTP Helpers -----
 # These return None on ConnectionError/Timeout to signal "use mock data instead"
@@ -165,6 +165,35 @@ def _build_cart_from_api(raw):
         "tax":      round(float(raw.get("SGST", 0)) + float(raw.get("CGST", 0)), 2),
         "discount": float(raw.get("TotalDiscount", 0)),
         "total":    float(raw.get("TotalBill", 0)),
+    }
+
+def _map_order(order):
+    """Convert one Lazzatt order object to our internal format."""
+    items = []
+    for p in order.get("Products", []):
+        items.append({
+            "name":                 p.get("ProductName", ""),
+            "unit_price":           float(p.get("MRP", 0)),
+            "quantity":             int(p.get("Quantity", 1)),
+            "total_price":          float(p.get("ProductTotalValue", 0)),
+            "image":                _build_image_url(p.get("ProductImage", "")),
+            "is_veg":               p.get("IsVeg", True),
+            "special_instructions": "",
+        })
+
+    return {
+        "id":             str(order.get("CustomerOrderID", "")),
+        "order_id":       str(order.get("CustomerOrderID", "")),
+        "order_number":   str(order.get("OrderNumber", "")),
+        "status":         order.get("OrderStatus", "Pending"),
+        "payment_status": "Paid" if order.get("PaymentMethod") else "Pending",
+        "payment_method": str(order.get("PaymentMethod") or ""),
+        "total_amount":   float(order.get("TotalValue", 0)),
+        "total":          float(order.get("TotalValue", 0)),
+        "created_at":     f"{order.get('OrderDate', '')} {order.get('OrderTime', '')}".strip(),
+        "items":          items,
+        "item_count":     len(items),
+        "delivery_address": "",
     }
 
 #------- MOCK DATA --------
@@ -450,48 +479,73 @@ def login(phone, password=None):
     }}
 
 def register(name, phone, email, password):
-    """POST /auth/register/"""
-    result = _post(f"{API_BASE}/auth/register/", {
-        "name": name, "phone": phone, "email": email, "password": password
+    """Register a new customer via Lazzatt /Api/CreateCustomer."""
+    result = _post(f"{API_BASE}/Api/CreateCustomer", {
+        "CustomerName":       name,
+        "Email":              email,
+        "AuthenticationType": 1
     })
-    if result is not None:
+
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    token = _mock_token()
-    return {"ok": True, "data": {
-        "token": token,
-        "user": {
-            "id":    "demo-" + str(uuid.uuid4())[:6],
-            "name":  name,
-            "phone": phone,
-            "email": email,
-        }
-    }}
+    # After creating, log them in immediately
+    return login(phone=phone, password=password)
+
+# def register(name, phone, email, password):
+#     """POST /auth/register/"""
+#     result = _post(f"{API_BASE}/auth/register/", {
+#         "name": name, "phone": phone, "email": email, "password": password
+#     })
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK
+#     token = _mock_token()
+#     return {"ok": True, "data": {
+#         "token": token,
+#         "user": {
+#             "id":    "demo-" + str(uuid.uuid4())[:6],
+#             "name":  name,
+#             "phone": phone,
+#             "email": email,
+#         }
+#     }}
 
 def get_profile(token):
-    """GET /auth/profile/"""
-    result = _get(f"{API_BASE}/auth/profile/", token=token)
-    if result is not None:
+    """Fetch customer details using CustomerID."""
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Not logged in."}
+
+    result = _post(f"{API_BASE}/Api/GetCustomerDetails", {
+        "CustomerID": token
+    })
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
+    raw = result["data"]
     return {"ok": True, "data": {
-        "id":              "demo-001",
-        "name":            "Demo Customer",
-        "phone":           "9876543210",
-        "email":           "demo@waytofood.com",
-        "default_address": "12, MG Road, Bengaluru, Karnataka - 560001",
+        "id":              str(raw.get("CustomerId", "")),
+        "name":            raw.get("CustomerName", "").strip(),
+        "phone":           raw.get("CustomerMobile", "").strip(),
+        "email":           raw.get("Email", "").strip(),
+        "default_address": "",
     }}
 
 def update_profile(token, data):
-    """PUT /auth/profile/"""
-    result = _put(f"{API_BASE}/auth/profile/", data, token=token)
-    if result is not None:
+    """Update customer profile via Lazzatt /Api/UpdateProfile."""
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Not logged in."}
+
+    result = _post(f"{API_BASE}/Api/UpdateProfile", {
+        "CustomerName":   data.get("name", ""),
+        "Email":          data.get("email", ""),
+        "CustomerMobile": data.get("phone", ""),
+    })
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    return {"ok": True, "data": {"user": {**data, "id": "demo-001"}}}
+    return {"ok": True, "data": {"user": data}}
 
 def send_otp(phone):
     """POST /auth/send-otp/"""
@@ -546,7 +600,7 @@ def get_categories(token=None):
 
 def get_menu_items(token=None, category_id=None, search=None):
     """Fetch menu items from Lazzatt API."""
-    # Use search endpoint if user typed something
+
     if search:
         result = _post(f"{API_BASE}/Api/GetSearchProduct", {
             "SearchName": search,
@@ -556,15 +610,18 @@ def get_menu_items(token=None, category_id=None, search=None):
             return {"ok": True, "data": [_map_product(p) for p in result["data"]]}
         return {"ok": False, "error": result.get("error", "Search failed.")}
 
-    # Otherwise fetch all products
     result = _post(f"{API_BASE}/Api/GetProduct", {
         "VeganType": "0",
         "CuisineType": "1"
     })
     if not result["ok"]:
-        return result
+        return {"ok": False, "error": result.get("error", "Could not load menu.")}
 
     items = [_map_product(p) for p in result["data"]]
+
+    # Store in cache for 5 minutes so item_detail doesn't need to re-fetch
+    cache.set("wtf_all_products", result["data"], timeout=300)
+
     return {"ok": True, "data": items}
 
 # def get_menu_items(token=None, category_id=None, search=None):
@@ -594,14 +651,29 @@ def get_menu_items(token=None, category_id=None, search=None):
 #     return {"ok": True, "data": items}
 
 def get_menu_item_detail(item_id, token=None):
-    """Fetch a single product by ID — Lazzatt doesn't have a single-item endpoint,
-    so we fetch all and filter. Not ideal but works for now."""
+    """
+    Fetch a single product by ID.
+    Uses cached product list if available — avoids a full API call on every detail page visit.
+    Falls back to a fresh API call if cache is empty.
+    """
+    # Try cache first
+    cached_products = cache.get("wtf_all_products")
+
+    if cached_products:
+        for raw_item in cached_products:
+            if str(raw_item.get("ProductId")) == str(item_id):
+                return {"ok": True, "data": _map_product(raw_item)}
+
+    # Cache miss — fetch fresh from API
     result = _post(f"{API_BASE}/Api/GetProduct", {
         "VeganType": "0",
         "CuisineType": "1"
     })
     if not result["ok"]:
-        return result
+        return {"ok": False, "error": "Could not load item details."}
+
+    # Refresh cache while we have the data
+    cache.set("wtf_all_products", result["data"], timeout=300)
 
     for raw_item in result["data"]:
         if str(raw_item.get("ProductId")) == str(item_id):
@@ -796,161 +868,275 @@ def remove_cart_item(token, cart_item_id):
 #     return {"ok": True, "data": _build_cart_response(token)}
 
 def clear_cart(token):
-    """DELETE /cart/"""
-    result = _delete(f"{API_BASE}/cart/", token=token)
-    if result is not None:
-        return result
+    """Clear cart by removing all items one by one — Lazzatt has no bulk clear endpoint."""
+    if not token or token.startswith("guest-"):
+        return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
 
-    # DEMO FALLBACK
-    _MOCK_CARTS[token] = {}
-    return {"ok": True, "data": _build_cart_response(token)}
+    cart_result = get_cart(token)
+    if not cart_result["ok"]:
+        return cart_result
 
-# --- Orders ---
+    items = cart_result["data"].get("items", [])
+    for item in items:
+        _post(f"{API_BASE}/Api/RemoveCart", {
+            "CustomerID":   token,
+            "CartDetailID": str(item["id"])
+        })
+        # We ignore individual errors here — best effort clear
+
+    return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
+
+# --- Orders ----
 
 def place_order(token, delivery_address, special_note=""):
-    """POST /orders/"""
-    result = _post(f"{API_BASE}/orders/", {
-        "delivery_address": delivery_address,
-        "special_note":     special_note,
-    }, token=token)
-    if result is not None:
+    """
+    Place order via Lazzatt.
+    Step 1: Save delivery address via AddAddress → get AddressID
+    Step 2: Call OrderPlaced with that AddressID
+    """
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Please log in to place an order."}
+
+    # Step 1 — Save address and get AddressID
+    address_result = _post(f"{API_BASE}/Api/AddAddress", {
+        "CustomerID":   token,
+        "FriendlyName": "Delivery Address",
+        "Address1":     delivery_address,
+        "Address2":     "",
+        "Landmark":     "",
+        "PostalCode":   "",
+        "AreaID":       "1",       # Default area — update once GetArea is integrated
+        "Latitude":     "0",
+        "Longitude":    "0",
+        "City":         "",
+        "State":        "",
+        "Country":      "India",
+        "AddressType":  "Home"
+    })
+
+    address_id = 0
+    if address_result["ok"] and isinstance(address_result["data"], dict):
+        address_id = address_result["data"].get("AddressID", 0)
+
+    # Step 2 — Place order
+    result = _post(f"{API_BASE}/Api/OrderPlaced", {
+        "CustomerId":           int(token),
+        "AddressID":            address_id,
+        "PaymentMethod":        2,          # 2 = Online payment
+        "OrderType":            1,          # 1 = Delivery
+        "IsRedeemPoint":        False,
+        "Remarks":              special_note,
+        "DeliveryCharges":      0,
+        "PorterOrderID":        0,
+        "TrackingURL":          "",
+        "PickupTime":           0,          # Must be integer, not string
+        "RequestPorterOrderID": 0
+    })
+
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK
-    cart_data = _build_cart_response(token)
-    if not cart_data["items"]:
-        return {"ok": False, "error": "Cart is empty."}
+    raw = result["data"]
+    order_id = raw.get("CustomerOrderID") or raw.get("OrderId") or str(uuid.uuid4())[:8]
 
-    order_id = "WTF-" + str(uuid.uuid4())[:6].upper()
-    now      = datetime.datetime.now()
+    return {"ok": True, "data": {
+        "id":               str(order_id),
+        "order_id":         str(order_id),
+        "status":           "Confirmed",
+        "total_amount":     0,
+        "total":            0,
+        "delivery_address": delivery_address,
+    }}
 
-    order = {
-        "id":                order_id,
-        "order_id":          order_id,
-        "status":            "Confirmed",
-        "payment_status":    "Pending",
-        "items":             [
-            {**ci, "total_price": ci["unit_price"] * ci["quantity"]}
-            for ci in cart_data["items"]
-        ],
-        "subtotal":          cart_data["subtotal"],
-        "tax":               cart_data["tax"],
-        "total_amount":      cart_data["total"],
-        "total":             cart_data["total"],
-        "delivery_address":  delivery_address,
-        "special_note":      special_note,
-        "created_at":        now.strftime("%d %b %Y, %I:%M %p"),
-        "estimated_delivery": "30–45 minutes",
-        "item_count":        len(cart_data["items"]),
-    }
+# def place_order(token, delivery_address, special_note=""):
+#     """POST /orders/"""
+#     result = _post(f"{API_BASE}/orders/", {
+#         "delivery_address": delivery_address,
+#         "special_note":     special_note,
+#     }, token=token)
+#     if result is not None:
+#         return result
 
-    # Save order and clear the cart
-    _MOCK_ORDERS.setdefault(token, []).insert(0, order)
-    _MOCK_CARTS[token] = {}
+#     # DEMO FALLBACK
+#     cart_data = _build_cart_response(token)
+#     if not cart_data["items"]:
+#         return {"ok": False, "error": "Cart is empty."}
 
-    return {"ok": True, "data": order}
+#     order_id = "WTF-" + str(uuid.uuid4())[:6].upper()
+#     now      = datetime.datetime.now()
+
+#     order = {
+#         "id":                order_id,
+#         "order_id":          order_id,
+#         "status":            "Confirmed",
+#         "payment_status":    "Pending",
+#         "items":             [
+#             {**ci, "total_price": ci["unit_price"] * ci["quantity"]}
+#             for ci in cart_data["items"]
+#         ],
+#         "subtotal":          cart_data["subtotal"],
+#         "tax":               cart_data["tax"],
+#         "total_amount":      cart_data["total"],
+#         "total":             cart_data["total"],
+#         "delivery_address":  delivery_address,
+#         "special_note":      special_note,
+#         "created_at":        now.strftime("%d %b %Y, %I:%M %p"),
+#         "estimated_delivery": "30–45 minutes",
+#         "item_count":        len(cart_data["items"]),
+#     }
+
+#     # Save order and clear the cart
+#     _MOCK_ORDERS.setdefault(token, []).insert(0, order)
+#     _MOCK_CARTS[token] = {}
+
+#     return {"ok": True, "data": order}
 
 def get_orders(token):
-    """GET /orders/"""
-    result = _get(f"{API_BASE}/orders/", token=token)
-    if result is not None:
+    """Fetch order history for logged-in customer."""
+    if not token or token.startswith("guest-"):
+        return {"ok": True, "data": []}
+
+    result = _post(f"{API_BASE}/Api/GetOrder", {
+        "CustomerId": int(token)
+    })
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK — show in-session orders, or sample history if none
-    orders = _MOCK_ORDERS.get(token, [])
-
-    if not orders:
-        # ── STEP 3 (optional): Edit these sample past orders ──────────────
-        orders = [
-            {
-                "id": "WTF-DEMO01", "order_id": "WTF-DEMO01",
-                "status": "Delivered", "payment_status": "Paid",
-                "total_amount": 680, "total": 680,
-                "created_at": "10 Jan 2025, 07:30 PM",
-                "item_count": 3,
-                "items": [
-                    {"name": "Butter Chicken", "unit_price": 380, "quantity": 1, "total_price": 380},
-                    {"name": "Garlic Naan",    "unit_price": 60,  "quantity": 2, "total_price": 120},
-                    {"name": "Gulab Jamun",    "unit_price": 120, "quantity": 1, "total_price": 120},
-                ],
-                "delivery_address": "12, MG Road, Bengaluru",
-            },
-            {
-                "id": "WTF-DEMO02", "order_id": "WTF-DEMO02",
-                "status": "Delivered", "payment_status": "Paid",
-                "total_amount": 420, "total": 420,
-                "created_at": "05 Jan 2025, 01:15 PM",
-                "item_count": 2,
-                "items": [
-                    {"name": "Chicken Biryani", "unit_price": 320, "quantity": 1, "total_price": 320},
-                    {"name": "Mango Lassi",     "unit_price": 120, "quantity": 1, "total_price": 120},
-                ],
-                "delivery_address": "12, MG Road, Bengaluru",
-            },
-        ]
-        # ---- End of sample orders ----
-
+    orders = [_map_order(o) for o in result["data"]]
     return {"ok": True, "data": orders}
 
+# def get_orders(token):
+#     """GET /orders/"""
+#     result = _get(f"{API_BASE}/orders/", token=token)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK — show in-session orders, or sample history if none
+#     orders = _MOCK_ORDERS.get(token, [])
+
+#     if not orders:
+#         # ── STEP 3 (optional): Edit these sample past orders ──────────────
+#         orders = [
+#             {
+#                 "id": "WTF-DEMO01", "order_id": "WTF-DEMO01",
+#                 "status": "Delivered", "payment_status": "Paid",
+#                 "total_amount": 680, "total": 680,
+#                 "created_at": "10 Jan 2025, 07:30 PM",
+#                 "item_count": 3,
+#                 "items": [
+#                     {"name": "Butter Chicken", "unit_price": 380, "quantity": 1, "total_price": 380},
+#                     {"name": "Garlic Naan",    "unit_price": 60,  "quantity": 2, "total_price": 120},
+#                     {"name": "Gulab Jamun",    "unit_price": 120, "quantity": 1, "total_price": 120},
+#                 ],
+#                 "delivery_address": "12, MG Road, Bengaluru",
+#             },
+#             {
+#                 "id": "WTF-DEMO02", "order_id": "WTF-DEMO02",
+#                 "status": "Delivered", "payment_status": "Paid",
+#                 "total_amount": 420, "total": 420,
+#                 "created_at": "05 Jan 2025, 01:15 PM",
+#                 "item_count": 2,
+#                 "items": [
+#                     {"name": "Chicken Biryani", "unit_price": 320, "quantity": 1, "total_price": 320},
+#                     {"name": "Mango Lassi",     "unit_price": 120, "quantity": 1, "total_price": 120},
+#                 ],
+#                 "delivery_address": "12, MG Road, Bengaluru",
+#             },
+#         ]
+#         # ---- End of sample orders ----
+
+#     return {"ok": True, "data": orders}
+
 def get_order_detail(token, order_id):
-    """GET /orders/{id}/"""
-    result = _get(f"{API_BASE}/orders/{order_id}/", token=token)
-    if result is not None:
+    """
+    Fetch a single order by CustomerOrderID.
+    Lazzatt has no single-order endpoint, so we fetch all orders and filter.
+    """
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Not logged in."}
+
+    result = _post(f"{API_BASE}/Api/GetOrder", {
+        "CustomerId": int(token)
+    })
+    if not result["ok"]:
         return result
 
-    # DEMO FALLBACK — check in-session orders first
-    for order in _MOCK_ORDERS.get(token, []):
-        if order["id"] == str(order_id):
-            return {"ok": True, "data": order}
+    for raw_order in result["data"]:
+        if str(raw_order.get("CustomerOrderID")) == str(order_id):
+            return {"ok": True, "data": _map_order(raw_order)}
 
-    # Then check the static demo orders
-    _demo_orders = {
-        "WTF-DEMO01": {
-            "id": "WTF-DEMO01", "order_id": "WTF-DEMO01",
-            "status": "Delivered", "payment_status": "Paid", "payment_method": "UPI",
-            "total_amount": 680, "total": 680, "subtotal": 620, "tax": 31,
-            "created_at": "10 Jan 2025, 07:30 PM",
-            "estimated_delivery": "Delivered",
-            "delivery_address": "12, MG Road, Bengaluru, Karnataka - 560001",
-            "items": [
-                {"name": "Butter Chicken", "unit_price": 380, "quantity": 1, "total_price": 380, "special_instructions": ""},
-                {"name": "Garlic Naan",    "unit_price": 60,  "quantity": 2, "total_price": 120, "special_instructions": "Extra butter"},
-                {"name": "Gulab Jamun",    "unit_price": 120, "quantity": 1, "total_price": 120, "special_instructions": ""},
-            ],
-        },
-        "WTF-DEMO02": {
-            "id": "WTF-DEMO02", "order_id": "WTF-DEMO02",
-            "status": "Delivered", "payment_status": "Paid", "payment_method": "Credit Card",
-            "total_amount": 420, "total": 420, "subtotal": 400, "tax": 20,
-            "created_at": "05 Jan 2025, 01:15 PM",
-            "estimated_delivery": "Delivered",
-            "delivery_address": "12, MG Road, Bengaluru, Karnataka - 560001",
-            "items": [
-                {"name": "Chicken Biryani", "unit_price": 320, "quantity": 1, "total_price": 320, "special_instructions": "Extra raita"},
-                {"name": "Mango Lassi",     "unit_price": 120, "quantity": 1, "total_price": 120, "special_instructions": ""},
-            ],
-        },
-    }
-
-    if str(order_id) in _demo_orders:
-        return {"ok": True, "data": _demo_orders[str(order_id)]}
     return {"ok": False, "error": "Order not found."}
+
+# def get_order_detail(token, order_id):
+#     """GET /orders/{id}/"""
+#     result = _get(f"{API_BASE}/orders/{order_id}/", token=token)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK — check in-session orders first
+#     for order in _MOCK_ORDERS.get(token, []):
+#         if order["id"] == str(order_id):
+#             return {"ok": True, "data": order}
+
+#     # Then check the static demo orders
+#     _demo_orders = {
+#         "WTF-DEMO01": {
+#             "id": "WTF-DEMO01", "order_id": "WTF-DEMO01",
+#             "status": "Delivered", "payment_status": "Paid", "payment_method": "UPI",
+#             "total_amount": 680, "total": 680, "subtotal": 620, "tax": 31,
+#             "created_at": "10 Jan 2025, 07:30 PM",
+#             "estimated_delivery": "Delivered",
+#             "delivery_address": "12, MG Road, Bengaluru, Karnataka - 560001",
+#             "items": [
+#                 {"name": "Butter Chicken", "unit_price": 380, "quantity": 1, "total_price": 380, "special_instructions": ""},
+#                 {"name": "Garlic Naan",    "unit_price": 60,  "quantity": 2, "total_price": 120, "special_instructions": "Extra butter"},
+#                 {"name": "Gulab Jamun",    "unit_price": 120, "quantity": 1, "total_price": 120, "special_instructions": ""},
+#             ],
+#         },
+#         "WTF-DEMO02": {
+#             "id": "WTF-DEMO02", "order_id": "WTF-DEMO02",
+#             "status": "Delivered", "payment_status": "Paid", "payment_method": "Credit Card",
+#             "total_amount": 420, "total": 420, "subtotal": 400, "tax": 20,
+#             "created_at": "05 Jan 2025, 01:15 PM",
+#             "estimated_delivery": "Delivered",
+#             "delivery_address": "12, MG Road, Bengaluru, Karnataka - 560001",
+#             "items": [
+#                 {"name": "Chicken Biryani", "unit_price": 320, "quantity": 1, "total_price": 320, "special_instructions": "Extra raita"},
+#                 {"name": "Mango Lassi",     "unit_price": 120, "quantity": 1, "total_price": 120, "special_instructions": ""},
+#             ],
+#         },
+#     }
+
+#     if str(order_id) in _demo_orders:
+#         return {"ok": True, "data": _demo_orders[str(order_id)]}
+#     return {"ok": False, "error": "Order not found."}
 
 # ---- Payment ----
 
 def initiate_payment(token, order_id):
-    """POST /payments/initiate/"""
-    result = _post(f"{API_BASE}/payments/initiate/", {"order_id": order_id}, token=token)
-    if result is not None:
-        return result
-
-    # DEMO FALLBACK — skip gateway, go straight to confirmation
-    payment_id = "PAY-" + str(uuid.uuid4())[:8].upper()
+    """
+    Lazzatt handles payment externally.
+    We skip the gateway and go straight to confirmation.
+    """
     return {"ok": True, "data": {
-        "payment_id":  payment_id,
-        "payment_url": None,     # None = no redirect, goes to confirmation page
+        "payment_id":  None,
+        "payment_url": None,
         "order_id":    order_id,
     }}
+
+# def initiate_payment(token, order_id):
+#     """POST /payments/initiate/"""
+#     result = _post(f"{API_BASE}/payments/initiate/", {"order_id": order_id}, token=token)
+#     if result is not None:
+#         return result
+
+#     # DEMO FALLBACK — skip gateway, go straight to confirmation
+#     payment_id = "PAY-" + str(uuid.uuid4())[:8].upper()
+#     return {"ok": True, "data": {
+#         "payment_id":  payment_id,
+#         "payment_url": None,     # None = no redirect, goes to confirmation page
+#         "order_id":    order_id,
+#     }}
 
 def get_payment_status(token, payment_id):
     """GET /payments/{id}/status/"""

@@ -16,7 +16,7 @@ import uuid
 
 from . import api_service as api
 
-# ─── Auth Helpers ─────────────────────────────────────────────────────────────
+# ---- Auth Helpers ----
 
 def _get_token(request):
     """Get auth token for logged-in user."""
@@ -97,33 +97,84 @@ def _merge_guest_cart(request):
     request.session.pop("guest_cart_token", None)
     request.session.modified = True
 
-# ─── Authentication Views ─────────────────────────────────────────────────────
+# ---- Authentication Views ----
+
+# def login_view(request):
+#     if _get_token(request):
+#         return redirect("menu")
+
+#     if request.method == "POST":
+#         phone = request.POST.get("phone", "").strip()
+#         otp   = request.POST.get("otp", "").strip()
+#         action = request.POST.get("auth_action", "").strip()
+
+#         if action == "resend":
+#             otp = ""
+
+#         if not phone:
+#             messages.error(request, "Please enter your mobile number.")
+#             next_url = request.POST.get("next") or request.GET.get("next", "")
+#             return render(request, "login.html", {"next_url": next_url})
+
+#         if request.method == "POST":
+#             phone    = request.POST.get("phone", "").strip()
+#             password = request.POST.get("password", "").strip()
+#             next_url = request.POST.get("next") or request.GET.get("next", "menu")
+
+#         if not phone or not password:
+#             messages.error(request, "Please enter both mobile number and password.")
+#             return render(request, "login.html", {"next_url": next_url})
+
+#         result = api.login(phone=phone, password=password)
+#         if result["ok"]:
+#             data = result["data"]
+#             _set_session(request, token=data.get("token"), user=data.get("user", {}))
+#             return redirect(next_url)
+#         else:
+#             messages.error(request, result.get("error", "Login failed. Please try again."))
+#             return render(request, "login.html", {"phone": phone, "next_url": next_url})
+
+#         # # Step 1 — phone submitted, no OTP yet → send OTP
+#         # if not otp:
+#         #     result = api.send_otp(phone=phone)
+#         #     if result["ok"]:
+#         #         is_resend = action == "resend" or request.POST.get("otp_sent") == "True"
+#         #         msg = f"A new OTP has been sent to {phone}" if is_resend else f"OTP sent to {phone}"
+#         #         messages.success(request, msg)
+#         #         next_url = request.POST.get("next") or request.GET.get("next", "")
+#         #         return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
+#         #     else:
+#         #         messages.error(request, result.get("error", "Could not send OTP."))
+#         #         next_url = request.POST.get("next") or request.GET.get("next", "")
+#         #         return render(request, "login.html", {"next_url": next_url})
+
+#         # # Step 2 — OTP submitted → verify and login
+#         # result = api.verify_otp(phone=phone, otp=otp)
+#         if result["ok"]:
+#             data = result["data"]
+#             _set_session(request, token=data.get("token"), user=data.get("user", {}))
+#             next_url = request.POST.get("next") or request.GET.get("next", "menu")
+#             return redirect(next_url)
+#         else:
+#             messages.error(request, result.get("error", "Invalid OTP. Please try again."))
+#             next_url = request.POST.get("next") or request.GET.get("next", "")
+#             return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
+
+#     next_url = request.GET.get("next", "")
+#     return render(request, "login.html", {"next_url": next_url})
 
 def login_view(request):
     if _get_token(request):
         return redirect("menu")
 
     if request.method == "POST":
-        phone = request.POST.get("phone", "").strip()
-        otp   = request.POST.get("otp", "").strip()
-        action = request.POST.get("auth_action", "").strip()
-
-        if action == "resend":
-            otp = ""
-
-        if not phone:
-            messages.error(request, "Please enter your mobile number.")
-            next_url = request.POST.get("next") or request.GET.get("next", "")
-            return render(request, "login.html", {"next_url": next_url})
-
-        if request.method == "POST":
-            phone    = request.POST.get("phone", "").strip()
-            password = request.POST.get("password", "").strip()
-            next_url = request.POST.get("next") or request.GET.get("next", "menu")
+        phone    = request.POST.get("phone", "").strip()
+        password = request.POST.get("password", "").strip()
+        next_url = request.POST.get("next") or request.GET.get("next", "menu")
 
         if not phone or not password:
             messages.error(request, "Please enter both mobile number and password.")
-            return render(request, "login.html", {"next_url": next_url})
+            return render(request, "login.html", {"phone": phone, "next_url": next_url})
 
         result = api.login(phone=phone, password=password)
         if result["ok"]:
@@ -133,32 +184,6 @@ def login_view(request):
         else:
             messages.error(request, result.get("error", "Login failed. Please try again."))
             return render(request, "login.html", {"phone": phone, "next_url": next_url})
-
-        # # Step 1 — phone submitted, no OTP yet → send OTP
-        # if not otp:
-        #     result = api.send_otp(phone=phone)
-        #     if result["ok"]:
-        #         is_resend = action == "resend" or request.POST.get("otp_sent") == "True"
-        #         msg = f"A new OTP has been sent to {phone}" if is_resend else f"OTP sent to {phone}"
-        #         messages.success(request, msg)
-        #         next_url = request.POST.get("next") or request.GET.get("next", "")
-        #         return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
-        #     else:
-        #         messages.error(request, result.get("error", "Could not send OTP."))
-        #         next_url = request.POST.get("next") or request.GET.get("next", "")
-        #         return render(request, "login.html", {"next_url": next_url})
-
-        # # Step 2 — OTP submitted → verify and login
-        # result = api.verify_otp(phone=phone, otp=otp)
-        if result["ok"]:
-            data = result["data"]
-            _set_session(request, token=data.get("token"), user=data.get("user", {}))
-            next_url = request.POST.get("next") or request.GET.get("next", "menu")
-            return redirect(next_url)
-        else:
-            messages.error(request, result.get("error", "Invalid OTP. Please try again."))
-            next_url = request.POST.get("next") or request.GET.get("next", "")
-            return render(request, "login.html", {"phone": phone, "otp_sent": True, "next_url": next_url})
 
     next_url = request.GET.get("next", "")
     return render(request, "login.html", {"next_url": next_url})
@@ -198,7 +223,7 @@ def logout_view(request):
     messages.success(request, "You have been logged out.")
     return redirect("menu")
 
-# ─── Menu Views ───────────────────────────────────────────────────────────────
+# ---- Menu Views ----
 
 def menu_view(request):
     """Public — no login required."""
@@ -239,7 +264,7 @@ def item_detail_view(request, item_id):
         "user":       _get_user(request),
     })
 
-# ─── Cart AJAX Views (work for guests too) ────────────────────────────────────
+# ---- Cart AJAX Views (work for guests too) ----
 
 @require_http_methods(["POST"])
 def add_to_cart_view(request):
@@ -350,7 +375,7 @@ def decrement_cart_item_by_item_id_view(request):
     )
     return JsonResponse({"ok": True, "cart_count": count})
 
-# ─── Cart Page ────────────────────────────────────────────────────────────────
+# ---- Cart Page ----
 
 def cart_view(request):
     """Cart page — works for guests too."""
@@ -372,7 +397,7 @@ def cart_view(request):
         "user":       _get_user(request),
     })
 
-# ─── Checkout & Orders (login required) ──────────────────────────────────────
+# ---- Checkout & Orders (login required) ----
 
 @_login_required
 def checkout_view(request):
