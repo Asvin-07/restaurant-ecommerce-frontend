@@ -326,11 +326,9 @@ def add_to_cart(token, item_id, quantity, special_instructions=""):
 
     item_price = 0
     for p in raw_products:
-        if product_result["ok"]:
-            for p in product_result["data"]:
-                if str(p.get("ProductId")) == str(item_id):
-                    item_price = float(p.get("ProductRate", 0))
-                    break
+        if str(p.get("ProductId")) == str(item_id):
+            item_price = float(p.get("ProductRate", 0))
+            break
 
     result = _post(f"{API_BASE}/Api/AddToCart", {
         "CustomerID": token,
