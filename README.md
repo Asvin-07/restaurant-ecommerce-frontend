@@ -41,7 +41,7 @@ Connected to the Lazzatt backend API. All menu, cart, and order data is live.
 ## Project Structure
 ```
 customer_app/
-    api_service.py   ← all API calls go here (currently mock data)
+    api_service.py   ← all API calls go here (Lazzatt API integration)
     views.py         ← handles requests and passes data to templates
     urls.py          ← URL routing
 templates/
