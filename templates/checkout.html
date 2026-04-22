@@ -66,7 +66,7 @@
         <div
           style="display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.88rem;border-bottom:1px solid #f0e8de;">
           <span style="flex:1;">{{ item.name }} × {{ item.quantity }}</span>
-          <span style="font-weight:700;">₹{{ item.total_price|default:item.unit_price }}</span>
+          <span style="font-weight:700;">₹{{ item.total_price|default:item.unit_price|floatformat:0 }}</span>
         </div>
         {% endfor %}
 

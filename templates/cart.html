@@ -37,7 +37,7 @@
             <div class="cart-item__instructions">📝 {{ item.special_instructions }}</div>
             {% endif %}
             <div style="color:#6c757d;font-size:0.8rem;margin-top:0.2rem;">
-              ₹{{ item.unit_price }} × <span class="qty-inline-display">{{ item.quantity }}</span>
+              ₹{{ item.unit_price|floatformat:0 }} × <span class="qty-inline-display">{{ item.quantity }}</span>
             </div>
           </div>
 
@@ -47,7 +47,7 @@
             <button class="qty-btn plus">+</button>
           </div>
 
-          <div class="cart-item__price">₹{{ item.total_price|default:item.unit_price }}</div>
+          <div class="cart-item__price">₹{{ item.total_price|default:item.unit_price|floatformat:0 }}</div>
           <button class="btn-remove" data-cart-item-id="{{ item.id }}" title="Remove item">🗑</button>
         </div>
         {% endfor %}

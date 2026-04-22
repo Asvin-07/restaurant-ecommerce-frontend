@@ -111,7 +111,7 @@
 
         <!-- Price + Add button -->
         <div class="menu-card__footer">
-          <span class="menu-card__price">₹{{ item.price }}</span>
+          <span class="menu-card__price">₹{{ item.price|floatformat:0 }}</span>
 
           {% if item.is_available %}
           <button class="btn-add" data-item-id="{{ item.id }}">+ Add</button>

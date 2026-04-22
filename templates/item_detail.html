@@ -39,7 +39,7 @@
       <p style="color:#6c757d;line-height:1.7;margin-bottom:1.5rem;">{{ item.description|default:"A delicious dish
         prepared fresh with the finest ingredients." }}</p>
 
-      <div style="font-size:2rem;font-weight:900;color:#C0392B;margin-bottom:1.5rem;">₹{{ item.price }}</div>
+      <div style="font-size:2rem;font-weight:900;color:#C0392B;margin-bottom:1.5rem;">₹{{ item.price|floatformat:0 }}</div>
 
       {% if item.is_available is not False %}
       <form id="item-detail-form" data-item-id="{{ item.id }}">
