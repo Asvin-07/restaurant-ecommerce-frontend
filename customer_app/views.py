@@ -167,6 +167,7 @@ def menu_view(request):
 
     cat_result   = api.get_categories(token=token)
     categories   = cat_result.get("data", []) if cat_result["ok"] else []
+    shop_status = api.get_shop_status()
 
     items_result = api.get_menu_items(
         token=token,
@@ -185,6 +186,8 @@ def menu_view(request):
         "search_query":      search_query,
         "cart_count":        _get_cart_count(request),
         "user":              _get_user(request),
+        "shop_closed":       shop_status.get("is_closed", False),
+        "shop_closed_message": shop_status.get("message", ""),
     })
 
 def item_detail_view(request, item_id):
@@ -492,3 +495,20 @@ def profile_view(request):
         "cart_count": 0,
         "user":       _get_user(request),
     })
+
+@require_http_methods(["GET"])
+def menu_items_json(request):
+    """Return menu items as JSON for AJAX category filtering."""
+    token = _get_token(request)
+    category_id = request.GET.get("category", "")
+    search = request.GET.get("search", "")
+
+    result = api.get_menu_items(
+        token=token,
+        category_id=category_id or None,
+        search=search or None
+    )
+
+    if result["ok"]:
+        return JsonResponse({"ok": True, "items": result["data"]})
+    return JsonResponse({"ok": False, "error": result.get("error", "Could not load items.")})

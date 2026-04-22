@@ -11,6 +11,7 @@ urlpatterns = [
     # Menu
     path('menu/', views.menu_view, name='menu'),
     path('menu/<str:item_id>/', views.item_detail_view, name='item_detail'),
+    path('api/menu-items/', views.menu_items_json, name='menu_items_json'),
 
     # Cart (page)
     path('cart/', views.cart_view, name='cart'),

@@ -6,13 +6,13 @@
 
 'use strict';
 
-// ─── CSRF Token ────────────────────────────────────────────
+// --- CSRF Token ---
 function getCsrfToken() {
   const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
   return cookie ? cookie.split('=')[1].trim() : '';
 }
 
-// ─── Toast Notification ────────────────────────────────────
+// --- Toast Notification ----
 function showToast(message, type = 'success') {
   // Remove existing toasts
   document.querySelectorAll('.wtf-toast').forEach(el => el.remove());
@@ -27,7 +27,7 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 1800);
 }
 
-// ─── Loading Overlay ───────────────────────────────────────
+// --- Loading Overlay ----
 function showLoading() {
   if (document.getElementById('wtf-loading')) return;
   const overlay = document.createElement('div');
@@ -89,7 +89,7 @@ function applyCartBadgeDelta(delta) {
   updateCartBadge(next);
 }
 
-// ─── Cart Badge Update ─────────────────────────────────────
+// --- Cart Badge Update ---
 function updateCartBadge(count) {
   document.querySelectorAll('.cart-badge-count').forEach(el => {
     el.textContent = count;
@@ -100,7 +100,7 @@ function updateCartBadge(count) {
   });
 }
 
-// ─── Add to Cart ───────────────────────────────────────────
+// --- Add to Cart ----
 function addToCart(itemId, quantity = 1, instructions = '') {
   applyCartBadgeDelta(quantity);
   showToast('Added to cart!', 'success');
@@ -126,7 +126,7 @@ function addToCart(itemId, quantity = 1, instructions = '') {
     });
 }
 
-// ─── Update Cart Item ──────────────────────────────────────
+// --- Update Cart Item ---
 function updateCartItem(cartItemId, quantity) {
   return fetch(`/cart/items/${cartItemId}/update/`, {
     method: 'POST',
@@ -144,7 +144,7 @@ function updateCartItem(cartItemId, quantity) {
     .catch(() => showToast('Connection error.', 'error'));
 }
 
-// ─── Remove Cart Item ──────
+// --- Remove Cart Item ---
 function removeCartItem(cartItemId) {
   return fetch(`/cart/items/${cartItemId}/remove/`, {
     method: 'POST',
@@ -158,7 +158,7 @@ function removeCartItem(cartItemId) {
     .catch(() => showToast('Connection error.', 'error'));
 }
 
-// ─── Clear Cart ──────
+// --- Clear Cart ----
 function clearCart() {
   if (!confirm("Are you sure you want to clear your cart?")) return;
 
@@ -221,7 +221,7 @@ function decrementCartByItem(itemId) {
     });
 }
 
-// ─── Cart Page Re-render ───────────────────────────────────
+// --- Cart Page Re-render ---
 function rerenderCart(cartData) {
   const items = cartData.items || [];
   const cartList = document.getElementById('cart-items-list');
@@ -273,6 +273,56 @@ function rerenderCart(cartData) {
   });
 }
 
+function renderMenuGrid(items) {
+  const menuGrid = document.querySelector('.menu-grid');
+  const emptyState = document.querySelector('.empty-state');
+  const filterEmpty = document.getElementById('menu-filter-empty');
+
+  if (!menuGrid) return;
+
+  if (!items || items.length === 0) {
+    menuGrid.innerHTML = '';
+    if (filterEmpty) filterEmpty.style.display = 'block';
+    return;
+  }
+
+  if (filterEmpty) filterEmpty.style.display = 'none';
+
+  menuGrid.innerHTML = items.map(item => `
+    <div class="menu-card" data-category="${item.category || ''}">
+      ${item.image
+      ? `<img src="${item.image}" alt="${item.name}" class="menu-card__img" loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">`
+      : ''}
+      <div class="menu-card__img-placeholder" ${item.image ? 'style="display:none"' : ''}>🍽️</div>
+
+      <div class="menu-card__body">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.3rem;">
+          <h3 class="menu-card__title" style="margin:0;">${item.name}</h3>
+          ${item.is_veg
+      ? '<span class="veg-badge" title="Vegetarian"></span>'
+      : '<span class="nveg-badge" title="Non-Vegetarian"></span>'}
+        </div>
+
+        ${item.category_name
+      ? `<p style="font-size:0.75rem;color:#E67E22;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;">${item.category_name}</p>`
+      : ''}
+
+        <p class="menu-card__desc">
+          ${item.description ? item.description.substring(0, 80) + (item.description.length > 80 ? '...' : '') : 'A delicious dish prepared fresh for you.'}
+        </p>
+
+        <div class="menu-card__footer">
+          <span class="menu-card__price">₹${item.price}</span>
+          ${item.is_available
+      ? `<button class="btn-add" data-item-id="${item.id}">+ Add</button>`
+      : '<span class="unavailable-label">Unavailable</span>'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
 // ─── DOM Ready ───
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -303,18 +353,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (categoryPills && menuGrid) {
     categoryPills.addEventListener('click', function (e) {
-      const pill = e.target.closest('.cat-pill[data-filter-cat]');
+      const pill = e.target.closest('.cat-pill');
       if (!pill) return;
+
+      // Only intercept if  with an href containing ?category=
+      const href = pill.getAttribute('href') || '';
+      if (href === '#' || (!href.includes('category=') && href !== '/' && !href.includes('menu'))) return;
+
       e.preventDefault();
 
-      const filterCat = pill.dataset.filterCat || 'all';
+      // Update active state
       categoryPills.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
       pill.classList.add('active');
-      applyCategoryFilter(filterCat);
-    });
 
-    const activePill = categoryPills.querySelector('.cat-pill.active[data-filter-cat]');
-    applyCategoryFilter(activePill ? activePill.dataset.filterCat : 'all');
+      // Extract category ID from href
+      const urlParams = new URLSearchParams(href.split('?')[1] || '');
+      const categoryId = urlParams.get('category') || '';
+
+      // Update browser URL without reload
+      const newUrl = categoryId ? `/?category=${categoryId}` : '/';
+      window.history.pushState({}, '', newUrl);
+
+      // Show loading state
+      menuGrid.style.opacity = '0.5';
+
+      // Fetch items via AJAX
+      const fetchUrl = `/api/menu-items/${categoryId ? '?category=' + categoryId : ''}`;
+      fetch(fetchUrl)
+        .then(r => r.json())
+        .then(data => {
+          menuGrid.style.opacity = '1';
+          if (!data.ok) {
+            showToast('Could not load items.', 'error');
+            return;
+          }
+          renderMenuGrid(data.items);
+        })
+        .catch(() => {
+          menuGrid.style.opacity = '1';
+          showToast('Connection error.', 'error');
+        });
+    });
   }
 
   if (menuGrid) {
@@ -548,11 +627,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
- // Checkout form — show loading on submit & validate address
+  // Checkout form — show loading on submit & validate address
   const checkoutForm = document.getElementById('checkout-form');
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', function (e) {
-      
+
       // 1. Validate Address Length
       const addressInput = document.querySelector('textarea[name="delivery_address"]');
       if (addressInput && addressInput.value.trim().length < 12) {
@@ -607,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
   });
 
-  // ── Location startup — runs on every page ──────────────
+  // --- Location startup — runs on every page ---
   let savedLocation = sessionStorage.getItem('wtf_user_location');
   const locationSkipped = sessionStorage.getItem('wtf_location_skipped');
 
@@ -626,7 +705,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (savedLocation) {
-    // 2. We have a location! Display it and clean up banners
     if (navbarLocation && navbarLocationText) {
       navbarLocationText.textContent = savedLocation;
       navbarLocation.style.display = 'flex';
@@ -648,9 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
   } else {
-    // 3. NO location is set. Clean up the stuck "Locating..." UI
     if (navbarLocationText && navbarLocationText.textContent.trim() === 'Locating...') {
-      // Let's just hide the navbar pill entirely! The big yellow banner is already asking them.
       if (navbarLocation) navbarLocation.style.display = 'none';
     }
 
@@ -665,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ─── Location Feature ──────────────────────────────────────
+// --- Location Feature ----
 
 function showLocationPopup() {
   const overlay = document.getElementById('location-overlay');
@@ -692,7 +768,7 @@ function setLocationDisplay(locationText) {
     navbarLocationText.textContent = locationText;
     navbarLocation.style.display = 'flex';
   }
-  // Hide reminder banner since location is now set
+  // Hide reminder banner 
   const reminder = document.getElementById('location-reminder');
   if (reminder) reminder.style.display = 'none';
 
@@ -787,7 +863,7 @@ function saveManualLocation() {
 function skipLocation() {
   sessionStorage.setItem('wtf_location_skipped', 'true');
   hideLocationPopup();
-  // Show reminder banner so user knows they can set it anytime
+  // Reminder banner 
   const reminder = document.getElementById('location-reminder');
   if (reminder) reminder.style.display = 'flex';
 }

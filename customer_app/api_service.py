@@ -1,5 +1,4 @@
 import requests
-import uuid
 from django.core.cache import cache
 
 #----- Configuration ------
@@ -138,14 +137,22 @@ def register(name, phone, email, password):
     result = _post(f"{API_BASE}/Api/CreateCustomer", {
         "CustomerName":       name,
         "Email":              email,
+        "CustomerMobile":     phone,
+        "Password":           password,
         "AuthenticationType": 1
     })
 
     if not result["ok"]:
         return result
 
-    # After creating, log them in immediately
-    return login(phone=phone, password=password)
+    # Attempt login immediately after registration
+    login_result = login(phone=phone, password=password)
+    if login_result["ok"]:
+        return login_result
+
+    # If login fails after registration, account was created but login failed
+    # This typically means the backend doesn't accept password via CreateCustomer
+    return {"ok": False, "error": "Account created but could not log in automatically. Please try logging in manually once your account is activated."}
 
 def get_profile(token):
     """Fetch customer details using CustomerID."""
@@ -181,6 +188,17 @@ def update_profile(token, data):
         return result
 
     return {"ok": True, "data": {"user": data}}
+
+def get_shop_status():
+    """Check if shop is currently open or closed."""
+    result = _post(f"{API_BASE}/Api/GetShopClosedStatus", {})
+    if not result["ok"]:
+        return {"is_closed": False}  # Assume open if can't check
+    # Check what the response looks like and map accordingly
+    data = result["data"]
+    if isinstance(data, dict):
+        return {"is_closed": data.get("IsShopClosed", False), "message": data.get("Message", "")}
+    return {"is_closed": False}
 
 def get_categories(token=None):
     """Fetch product categories from Lazzatt."""
@@ -432,7 +450,7 @@ def place_order(token, delivery_address, special_note=""):
         return result
 
     raw = result["data"]
-    order_id = raw.get("CustomerOrderID") or raw.get("OrderId") or str(uuid.uuid4())[:8]
+    order_id = raw.get("CustomerOrderID") or raw.get("OrderId") or "0"
 
     return {"ok": True, "data": {
         "id":               str(order_id),
