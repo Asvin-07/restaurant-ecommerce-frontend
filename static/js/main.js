@@ -101,6 +101,12 @@ function updateCartBadge(count) {
 
 // --- Add to Cart ----
 function addToCart(itemId, quantity = 1, instructions = '') {
+  // Check login state before making any API call
+  if (document.body.dataset.authenticated !== 'true') {
+    showToast('Please log in to add items to cart.', 'error');
+    setTimeout(() => { window.location.href = '/login/?next=/'; }, 1200);
+    return Promise.resolve({ ok: false });
+  }
   applyCartBadgeDelta(quantity);
   showToast('Added to cart!', 'success');
   return fetch('/cart/add/', {
@@ -335,53 +341,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const categoryPills = document.querySelector('.category-pills');
   const filterEmpty = document.getElementById('menu-filter-empty');
 
-  function applyCategoryFilter(filterCat) {
-    if (!menuGrid) return;
-    const cards = menuGrid.querySelectorAll('.menu-card[data-category]');
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      const cardCat = card.dataset.category || '';
-      const show = (filterCat === 'all' || cardCat === filterCat);
-      card.style.display = show ? '' : 'none';
-      if (show) visibleCount += 1;
-    });
-
-    if (filterEmpty) filterEmpty.style.display = visibleCount === 0 ? 'block' : 'none';
-  }
-
   if (categoryPills && menuGrid) {
     categoryPills.addEventListener('click', function (e) {
       const pill = e.target.closest('.cat-pill');
       if (!pill) return;
 
-      // Only intercept if  with an href containing ?category=
       const href = pill.getAttribute('href') || '';
-      if (href === '#' || (!href.includes('category=') && href !== '/' && !href.includes('menu'))) return;
 
+      // Intercept all category pills
       e.preventDefault();
 
-      // Update active state
+      // Update which pill looks active
       categoryPills.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
       pill.classList.add('active');
 
-      // Extract category ID from href
-      const urlParams = new URLSearchParams(href.split('?')[1] || '');
-      const categoryId = urlParams.get('category') || '';
+      // Get category ID from the URL in the href
+      const hrefParams = new URLSearchParams(href.split('?')[1] || '');
+      const categoryId = hrefParams.get('category') || '';
 
-      // Update browser URL without reload
+      // Update the browser address bar (no reload)
       const newUrl = categoryId ? `/?category=${categoryId}` : '/';
       window.history.pushState({}, '', newUrl);
 
-      // Show loading state
+      // Fade the grid to show loading
       menuGrid.style.opacity = '0.5';
+      menuGrid.style.pointerEvents = 'none';
 
-      // Fetch items via AJAX
-      const fetchUrl = `/api/menu-items/${categoryId ? '?category=' + categoryId : ''}`;
-      fetch(fetchUrl)
+      // Build the API URL and fetch
+      const apiUrl = categoryId
+        ? `/api/menu-items/?category=${categoryId}`
+        : `/api/menu-items/`;
+
+      fetch(apiUrl)
         .then(r => r.json())
         .then(data => {
           menuGrid.style.opacity = '1';
+          menuGrid.style.pointerEvents = '';
           if (!data.ok) {
             showToast('Could not load items.', 'error');
             return;
@@ -390,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(() => {
           menuGrid.style.opacity = '1';
+          menuGrid.style.pointerEvents = '';
           showToast('Connection error.', 'error');
         });
     });

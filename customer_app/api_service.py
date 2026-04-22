@@ -180,6 +180,7 @@ def update_profile(token, data):
         return {"ok": False, "error": "Not logged in."}
 
     result = _post(f"{API_BASE}/Api/UpdateProfile", {
+        "CustomerID":     token,
         "CustomerName":   data.get("name", ""),
         "Email":          data.get("email", ""),
         "CustomerMobile": data.get("phone", ""),
@@ -191,14 +192,27 @@ def update_profile(token, data):
 
 def get_shop_status():
     """Check if shop is currently open or closed."""
-    result = _post(f"{API_BASE}/Api/GetShopClosedStatus", {})
-    if not result["ok"]:
-        return {"is_closed": False}  # Assume open if can't check
-    # Check what the response looks like and map accordingly
-    data = result["data"]
-    if isinstance(data, dict):
-        return {"is_closed": data.get("IsShopClosed", False), "message": data.get("Message", "")}
-    return {"is_closed": False}
+    try:
+        result = _post(f"{API_BASE}/Api/GetShopClosedStatus", {})
+        if not result["ok"]:
+            return {"is_closed": False, "message": ""}
+        data = result["data"]
+        # Handle dict response
+        if isinstance(data, dict):
+            return {
+                "is_closed": bool(data.get("IsShopClosed", False)),
+                "message":   data.get("ShopClosedMessage", data.get("Message", ""))
+            }
+        # Handle list response — if list has items, shop might be closed
+        if isinstance(data, list) and len(data) > 0:
+            first = data[0]
+            return {
+                "is_closed": bool(first.get("IsShopClosed", False)),
+                "message":   first.get("ShopClosedMessage", "")
+            }
+        return {"is_closed": False, "message": ""}
+    except Exception:
+        return {"is_closed": False, "message": ""}
 
 def get_categories(token=None):
     """Fetch product categories from Lazzatt."""

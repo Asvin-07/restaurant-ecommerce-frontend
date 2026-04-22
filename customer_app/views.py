@@ -1,5 +1,4 @@
 """
-views.py - Customer-facing views for Way To Food (WTF)
 - Menu and item browsing works without login (guests welcome)
 - Cart works for guests using session-based token
 - Checkout, orders, profile require login
