@@ -1,7 +1,5 @@
 import requests
 import uuid
-import datetime
-from django.conf import settings
 from django.core.cache import cache
 
 #----- Configuration ------
@@ -37,7 +35,6 @@ def _build_image_url(raw_image):
 # ---- RESPONSE MAPPERS — Convert Lazzatt field names to internal format ------
 
 def _map_product(item):
-    """Convert one Lazzatt product object to our internal format."""
     return {
         "id":            str(item.get("ProductId", "")),
         "name":          item.get("ProductName", ""),
@@ -54,9 +51,8 @@ def _map_product(item):
         "rating":        None,   # Lazzatt API doesn't provide ratings
         "review_count":  None,
     }
-    
+
 def _map_cart_item(item):
-    """Convert one Lazzatt cart item to our internal format."""
     return {
         "id":                   str(item.get("CartDetailID", "")),  # Server-assigned ID
         "item_id":              str(item.get("ProductID", "")),
@@ -71,7 +67,6 @@ def _map_cart_item(item):
     }
 
 def _build_cart_from_api(raw):
-    """Build our internal cart dict from the full GetCartList response."""
     items = [_map_cart_item(i) for i in raw.get("Data", [])]
     return {
         "items":    items,
@@ -82,7 +77,6 @@ def _build_cart_from_api(raw):
     }
 
 def _map_order(order):
-    """Convert one Lazzatt order object to our internal format."""
     items = []
     for p in order.get("Products", []):
         items.append({
@@ -310,7 +304,7 @@ def add_to_cart(token, item_id, quantity, special_instructions=""):
     if not token or token.startswith("guest-"):
         return {"ok": False, "error": "Please log in to add items to cart."}
 
-    # First we need the item price — fetch it from the product list
+    # First, the item price — fetch it from the product list
     # Lazzatt's AddToCart needs the Amount (price) in the body
     cached = cache.get("wtf_all_products")
     raw_products = cached if cached else []
@@ -389,18 +383,12 @@ def clear_cart(token):
             "CustomerID":   token,
             "CartDetailID": str(item["id"])
         })
-        # We ignore individual errors here — best effort clear
 
     return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
 
 # --- Orders ----
 
 def place_order(token, delivery_address, special_note=""):
-    """
-    Place order via Lazzatt.
-    Step 1: Save delivery address via AddAddress → get AddressID
-    Step 2: Call OrderPlaced with that AddressID
-    """
     if not token or token.startswith("guest-"):
         return {"ok": False, "error": "Please log in to place an order."}
 
