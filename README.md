@@ -1,11 +1,11 @@
-# Way To Food (WTF) — Restaurant Ordering App
-## B.Tech Project — Asvin Nigam | 202252343
+# Way To Food (WTF) - Restaurant Ordering App
+## B.Tech Project - Asvin Nigam | 202252343
 
 This is my frontend for a customer-facing restaurant e-commerce web application,
 built as part of my B.Tech project at IIIT Vadodara.
 
 The app lets customers browse the menu, add items to cart, and place orders.
-It is built using Django and plain HTML/CSS/JS — no frontend framework.
+It is built using Django and plain HTML/CSS/JS - no frontend framework.
 
 Connected to the Lazzatt backend API. All menu, cart, and order data is live.
 ---
@@ -27,7 +27,7 @@ Connected to the Lazzatt backend API. All menu, cart, and order data is live.
 
 | URL | What it does |
 |-----|-------------|
-| `/` | Menu page — browse all food items |
+| `/` | Menu page - browse all food items |
 | `/login/` | Login with mobile + password |
 | `/register/` | Create a new account |
 | `/cart/` | View and edit your cart |

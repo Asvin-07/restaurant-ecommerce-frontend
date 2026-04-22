@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Way To Food{% endblock %} — WTF</title>
+  <title>{% block title %}Way To Food{% endblock %} - WTF</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=4">
   <link rel="icon"
@@ -24,7 +24,7 @@
         </div>
       </a>
 
-      <!-- Location pill — clicking opens popup from any page -->
+      <!-- Location pill - clicking opens popup from any page -->
       <div id="navbar-location" onclick="showLocationPopup()"
         style="display:none; align-items:center; gap:5px; color:rgba(255,255,255,0.85); font-size:0.8rem; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,0.2); border-radius:50px; padding:0.3rem 0.8rem;">
         <span>📍</span>
@@ -68,7 +68,7 @@
   {% if DEMO_MODE %}
   <div
     style="background:#fff3cd;border-bottom:2px solid #E67E22;padding:0.4rem 1rem;text-align:center;font-size:0.82rem;font-weight:700;color:#856404;">
-    🔧 Demo Mode — Using sample data. Backend API not connected yet.
+    🔧 Demo Mode - Using sample data. Backend API not connected yet.
   </div>
   {% endif %}
 
@@ -76,7 +76,7 @@
   {% block location_reminder %}
   <div id="location-reminder"
     style="display:none; background:#fff8e1; border-bottom:2px solid #E67E22; padding:0.6rem 1rem; align-items:center; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
-    <span style="font-size:0.88rem; color:#6c757d;">📍 Location not set — some items may not be available in your
+    <span style="font-size:0.88rem; color:#6c757d;">📍 Location not set - some items may not be available in your
       area.</span>
     <button onclick="showLocationPopup()"
       style="background:#E67E22; color:white; border:none; border-radius:50px; padding:0.3rem 1rem; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.82rem; cursor:pointer;">

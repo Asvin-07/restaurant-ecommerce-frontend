@@ -1,5 +1,5 @@
 """
-views.py — Customer-facing views for Way To Food (WTF)
+views.py - Customer-facing views for Way To Food (WTF)
 - Menu and item browsing works without login (guests welcome)
 - Cart works for guests using session-based token
 - Checkout, orders, profile require login
@@ -36,7 +36,7 @@ def _get_cart_token(request):
     if token:
         return token
 
-    # Guest — use or create a session-based cart token
+    # Guest - use or create a session-based cart token
     guest_token = request.session.get("guest_cart_token")
     if not guest_token:
         guest_token = "guest-" + str(uuid.uuid4())[:8]
@@ -160,7 +160,7 @@ def logout_view(request):
 # ---- Menu Views ----
 
 def menu_view(request):
-    """Public — no login required."""
+    """Public - no login required."""
     token        = _get_token(request)   # None for guests
     search_query = request.GET.get("search", "")
     selected_category = request.GET.get("category", "")
@@ -191,7 +191,7 @@ def menu_view(request):
     })
 
 def item_detail_view(request, item_id):
-    """Public — no login required."""
+    """Public - no login required."""
     token  = _get_token(request)
     result = api.get_menu_item_detail(item_id=item_id, token=token)
     if not result["ok"]:
@@ -207,7 +207,7 @@ def item_detail_view(request, item_id):
 
 @require_http_methods(["POST"])
 def add_to_cart_view(request):
-    """Add item to cart — works for both guests and logged-in users."""
+    """Add item to cart - works for both guests and logged-in users."""
     token = _get_cart_token(request)   # always returns a valid token
 
     try:
@@ -234,7 +234,7 @@ def add_to_cart_view(request):
 
 @require_http_methods(["POST"])
 def update_cart_item_view(request, cart_item_id):
-    """Update cart item quantity — works for guests too."""
+    """Update cart item quantity - works for guests too."""
     token = _get_cart_token(request)
 
     try:
@@ -251,7 +251,7 @@ def update_cart_item_view(request, cart_item_id):
 
 @require_http_methods(["POST"])
 def remove_cart_item_view(request, cart_item_id):
-    """Remove cart item — works for guests too."""
+    """Remove cart item - works for guests too."""
     token  = _get_cart_token(request)
     result = api.remove_cart_item(token=token, cart_item_id=cart_item_id)
     if result["ok"]:
@@ -261,7 +261,7 @@ def remove_cart_item_view(request, cart_item_id):
 
 @require_http_methods(["POST"])
 def clear_cart_view(request):
-    """Clear the entire cart — works for guests too."""
+    """Clear the entire cart - works for guests too."""
     token = _get_cart_token(request)
     result = api.clear_cart(token=token)
 
@@ -271,7 +271,7 @@ def clear_cart_view(request):
 
 @require_http_methods(["POST"])
 def decrement_cart_item_by_item_id_view(request):
-    """Decrement cart quantity by menu item_id — used from menu cards."""
+    """Decrement cart quantity by menu item_id - used from menu cards."""
     token = _get_cart_token(request)
 
     try:
@@ -317,7 +317,7 @@ def decrement_cart_item_by_item_id_view(request):
 # ---- Cart Page ----
 
 def cart_view(request):
-    """Cart page — works for guests too."""
+    """Cart page - works for guests too."""
     token  = _get_cart_token(request)
     result = api.get_cart(token=token)
 

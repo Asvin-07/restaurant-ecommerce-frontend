@@ -9,7 +9,7 @@
 <div class="wtf-hero">
   <div class="container-wtf">
     <h1>Order Fresh.<br>Eat Happy. 🍽️</h1>
-    <p>Explore our full menu — hot, delicious food delivered to your door.</p>
+    <p>Explore our full menu - hot, delicious food delivered to your door.</p>
 
     <!-- Search Bar -->
     <form id="menu-search-form" action="{% url 'menu' %}" method="GET" style="margin-top:1.5rem;">
@@ -27,24 +27,32 @@
 </div>
 
 {% if shop_closed %}
-<div style="background:#fdecea;border-bottom:2px solid #C0392B;padding:0.75rem 1rem;text-align:center;font-weight:700;color:#C0392B;font-size:0.9rem;">
-  🔴 We are currently closed. {% if shop_closed_message %}{{ shop_closed_message }}{% else %}Please check back later.{% endif %}
+<div
+  style="background:#fdecea;border-bottom:2px solid #C0392B;padding:0.75rem 1rem;text-align:center;font-weight:700;color:#C0392B;font-size:0.9rem;">
+  🔴 We are currently closed.
+  {% if shop_closed_message %}
+  {{ shop_closed_message }}
+  {% else %}
+  Please check back later.
+  {% endif %}
 </div>
 {% endif %}
 
 <!-- --- Category Filter Strip ---- -->
 <div class="category-strip">
   <div class="container-wtf">
-    <div class="category-pills">
-      <a href="{% url 'menu' %}" class="cat-pill {% if not selected_category %}active{% endif %}">
-        🍴 All Items
-      </a>
-      {% for cat in categories %}
-      <a href="?category={{ cat.id }}"
-        class="cat-pill {% if selected_category == cat.id|stringformat:'s' %}active{% endif %}">
-        {{ cat.name }}
-      </a>
-      {% endfor %}
+    <div class="category-strip-inner">
+      <div class="category-pills">
+        <a href="{% url 'menu' %}" class="cat-pill {% if not selected_category %}active{% endif %}">
+          🍴 All Items
+        </a>
+        {% for cat in categories %}
+        <a href="?category={{ cat.id }}"
+          class="cat-pill {% if selected_category == cat.id|stringformat:'s' %}active{% endif %}">
+          {{ cat.name }}
+        </a>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>
@@ -55,7 +63,7 @@
   {% if search_query %}
   <p style="margin-bottom:0.5rem;color:#6c757d;font-weight:600;">
     Showing results for "<strong>{{ search_query }}</strong>"
-    {% if menu_items %} — {{ menu_items|length }} item{% if menu_items|length != 1 %}s{% endif %} found{% endif %}
+    {% if menu_items %} - {{ menu_items|length }} item{% if menu_items|length != 1 %}s{% endif %} found{% endif %}
   </p>
   {% endif %}
 

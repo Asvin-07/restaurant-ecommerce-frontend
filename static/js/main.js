@@ -1,9 +1,8 @@
 /**
- * main.js — Way To Food Frontend JavaScript
+ * main.js - Way To Food Frontend JavaScript
  * Handles: AJAX cart operations, toast notifications, UI interactions
- * No business logic — only UI interaction and API call coordination
+ * No business logic - only UI interaction and API call coordination
  */
-
 'use strict';
 
 // --- CSRF Token ---
@@ -538,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
       qtyCtrlDisplay.textContent = qty;
       if (qtyInlineDisplay) qtyInlineDisplay.textContent = qty;
 
-      // Optimistic row total update for snappier UI
+      // Optimistic row total update
       const unitPrice = Number(row.dataset.unitPrice || 0);
       if (itemTotal && unitPrice > 0) {
         itemTotal.textContent = '₹' + (unitPrice * qty).toFixed(2);
@@ -615,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Search form — remove empty params
+  // Search form - remove empty params
   const searchForm = document.getElementById('menu-search-form');
   if (searchForm) {
     searchForm.addEventListener('submit', function (e) {
@@ -627,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Checkout form — show loading on submit & validate address
+  // Checkout form - show loading on submit & validate address
   const checkoutForm = document.getElementById('checkout-form');
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', function (e) {
@@ -686,7 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
   });
 
-  // --- Location startup — runs on every page ---
+  // --- Location startup - runs on every page ---
   let savedLocation = sessionStorage.getItem('wtf_user_location');
   const locationSkipped = sessionStorage.getItem('wtf_location_skipped');
 
@@ -866,4 +865,81 @@ function skipLocation() {
   // Reminder banner 
   const reminder = document.getElementById('location-reminder');
   if (reminder) reminder.style.display = 'flex';
+}
+
+// --- Category Strip Scroll Fades ---
+const strip = document.querySelector('.category-pills');
+const inner = document.querySelector('.category-strip-inner');
+
+function updateFades() {
+  if (!strip || !inner) return;
+  const scrollLeft = strip.scrollLeft;
+  const maxScroll = strip.scrollWidth - strip.clientWidth;
+
+  // Left fade - only show if scrolled right
+  inner.classList.toggle('show-fade-left', scrollLeft > 10);
+
+  // Right fade - only show if more content to the right
+  inner.classList.toggle('show-fade-right', scrollLeft < maxScroll - 10);
+}
+
+if (strip) {
+  strip.addEventListener('scroll', updateFades);
+  // Run once on load
+  updateFades();
+}
+
+// --- Draggable Scroll for Category Pills ---
+const pillsContainer = document.querySelector('.category-pills');
+if (pillsContainer) {
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+  let hasDragged = false;  // fix 3: distinguish click from drag
+
+  // Fix 1: prevent ghost image when dragging text/elements
+  pillsContainer.addEventListener('dragstart', (e) => e.preventDefault());
+
+  pillsContainer.addEventListener('mousedown', (e) => {
+    isDown = true;
+    hasDragged = false;
+    startX = e.pageX - pillsContainer.offsetLeft;
+    scrollLeft = pillsContainer.scrollLeft;
+  });
+
+  pillsContainer.addEventListener('mouseleave', () => {
+    isDown = false;
+    pillsContainer.style.cursor = 'grab';
+  });
+
+  pillsContainer.addEventListener('mouseup', () => {
+    isDown = false;
+    pillsContainer.style.cursor = 'grab';
+  });
+
+  pillsContainer.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault(); // Fix 2: prevent text selection while dragging
+    const x = e.pageX - pillsContainer.offsetLeft;
+    const walk = (x - startX) * 1.5;
+
+    // Only activate drag if moved more than 5px - fix 3
+    if (Math.abs(walk) > 5) {
+      hasDragged = true;
+      pillsContainer.style.cursor = 'grabbing';
+      pillsContainer.scrollLeft = scrollLeft - walk;
+      updateFades();
+    }
+  });
+
+  // Fix 3: block pill click if it was actually a drag
+  pillsContainer.addEventListener('click', (e) => {
+    if (hasDragged) {
+      e.preventDefault();
+      e.stopPropagation();
+      hasDragged = false;
+    }
+  }, true);
+
+  pillsContainer.style.cursor = 'grab';
 }

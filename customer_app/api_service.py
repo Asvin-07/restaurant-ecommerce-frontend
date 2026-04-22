@@ -31,7 +31,7 @@ def _build_image_url(raw_image):
         return ""
     return IMAGE_BASE + raw_image.strip()
 
-# ---- RESPONSE MAPPERS — Convert Lazzatt field names to internal format ------
+# ---- RESPONSE MAPPERS - Convert Lazzatt field names to internal format ------
 
 def _map_product(item):
     return {
@@ -118,7 +118,7 @@ def login(phone, password=None):
     raw = result["data"]
     customer_id = raw.get("CustomerId", 0)
 
-    # Check — even if Success=true, CustomerId=0 means something is wrong
+    # Check - even if Success=true, CustomerId=0 means something is wrong
     if not customer_id:
         return {"ok": False, "error": "Login failed. Please check your credentials."}
 
@@ -227,7 +227,7 @@ def get_menu_items(token=None, category_id=None, search=None):
             return {"ok": True, "data": [_map_product(p) for p in result["data"]]}
         return {"ok": False, "error": result.get("error", "Search failed.")}
 
-    # Build payload — if category selected, use GetPagerProduct for that type
+    # Build payload - if category selected, use GetPagerProduct for that type
     if category_id:
         result = _post(f"{API_BASE}/Api/GetPagerProduct", {
             "VeganType": 0,
@@ -252,7 +252,7 @@ def get_menu_items(token=None, category_id=None, search=None):
 def get_menu_item_detail(item_id, token=None):
     """
     Fetch a single product by ID.
-    Uses cached product list if available — avoids a full API call on every detail page visit.
+    Uses cached product list if available - avoids a full API call on every detail page visit.
     Falls back to a fresh API call if cache is empty.
     """
     # Try cache first
@@ -263,7 +263,7 @@ def get_menu_item_detail(item_id, token=None):
             if str(raw_item.get("ProductId")) == str(item_id):
                 return {"ok": True, "data": _map_product(raw_item)}
 
-    # Cache miss — fetch fresh from API
+    # Cache miss - fetch fresh from API
     result = _post(f"{API_BASE}/Api/GetProduct", {
         "VeganType": "0",
         "CuisineType": "1"
@@ -305,7 +305,7 @@ def _post_full(url, payload):
 def get_cart(token):
     """Fetch cart for logged-in user using CustomerID."""
     if not token or token.startswith("guest-"):
-        # Guest users have no server-side cart — return empty
+        # Guest users have no server-side cart - return empty
         return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
 
     result = _post_full(f"{API_BASE}/Api/GetCartList", {
@@ -322,7 +322,7 @@ def add_to_cart(token, item_id, quantity, special_instructions=""):
     if not token or token.startswith("guest-"):
         return {"ok": False, "error": "Please log in to add items to cart."}
 
-    # First, the item price — fetch it from the product list
+    # First, the item price - fetch it from the product list
     # Lazzatt's AddToCart needs the Amount (price) in the body
     cached = cache.get("wtf_all_products")
     raw_products = cached if cached else []
@@ -387,7 +387,7 @@ def remove_cart_item(token, cart_item_id):
     return get_cart(token)
 
 def clear_cart(token):
-    """Clear cart by removing all items one by one — Lazzatt has no bulk clear endpoint."""
+    """Clear cart by removing all items one by one - Lazzatt has no bulk clear endpoint."""
     if not token or token.startswith("guest-"):
         return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
 
@@ -410,7 +410,7 @@ def place_order(token, delivery_address, special_note=""):
     if not token or token.startswith("guest-"):
         return {"ok": False, "error": "Please log in to place an order."}
 
-    # Step 1 — Save address and get AddressID
+    # Step 1 - Save address and get AddressID
     address_result = _post(f"{API_BASE}/Api/AddAddress", {
         "CustomerID":   token,
         "FriendlyName": "Delivery Address",
@@ -418,7 +418,7 @@ def place_order(token, delivery_address, special_note=""):
         "Address2":     "",
         "Landmark":     "",
         "PostalCode":   "",
-        "AreaID":       "1",       # Default area — update once GetArea is integrated
+        "AreaID":       "1",       # Default area - update once GetArea is integrated
         "Latitude":     "0",
         "Longitude":    "0",
         "City":         "",
@@ -431,7 +431,7 @@ def place_order(token, delivery_address, special_note=""):
     if address_result["ok"] and isinstance(address_result["data"], dict):
         address_id = address_result["data"].get("AddressID", 0)
 
-    # Step 2 — Place order
+    # Step 2 - Place order
     result = _post(f"{API_BASE}/Api/OrderPlaced", {
         "CustomerId":           int(token),
         "AddressID":            address_id,
@@ -509,5 +509,5 @@ def initiate_payment(token, order_id):
     }}
 
 def get_payment_status(token, payment_id):
-    """Lazzatt handles payment externally — no status endpoint available."""
+    """Lazzatt handles payment externally - no status endpoint available."""
     return {"ok": True, "data": {"status": "success"}}

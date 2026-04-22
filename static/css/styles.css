@@ -262,6 +262,45 @@ body.cart-page .wtf-main-content {
   z-index: 100;
 }
 
+.category-strip-inner {
+  position: relative;
+}
+
+.category-strip-inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(to left, transparent, white);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.category-strip-inner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(to right, transparent, white);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.category-strip-inner.show-fade-left::before {
+  opacity: 1;
+}
+
+.category-strip-inner.show-fade-right::after {
+  opacity: 1;
+}
+
 .category-pills {
   display: flex;
   flex-wrap: nowrap !important;
@@ -270,6 +309,8 @@ body.cart-page .wtf-main-content {
   scrollbar-width: none;
   padding: 0 1.2rem 2px;
   gap: 0.5rem;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .category-pills::-webkit-scrollbar {
