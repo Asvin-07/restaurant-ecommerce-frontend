@@ -3,7 +3,7 @@ from django.core.cache import cache
 
 #----- Configuration ------
 API_BASE        = "https://test.lazzatt.com"
-IMAGE_BASE      = "https://test.lazzatt.com/"
+IMAGE_BASE      = "https://test.lazzatt.com/upload/"
 REQUEST_TIMEOUT = 10
 DEMO_MODE       = False
 
