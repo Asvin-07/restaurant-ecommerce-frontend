@@ -453,13 +453,15 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast('Connection error.', 'error');
         });
     });
+  }
+  
+  // Close modal when clicking the dark backdrop
   const modalOverlay = document.getElementById('item-modal-overlay');
   if (modalOverlay) {
     modalOverlay.addEventListener('click', function (e) {
       if (e.target === this) closeItemModal();
     });
   }
-}
 
   if (menuGrid) {
     menuGrid.addEventListener('click', function (e) {

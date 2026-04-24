@@ -114,9 +114,10 @@
           data-item-image="{{ item.image|default_if_none:'' }}" 
           data-item-is-veg="{{ item.is_veg|yesno:'true,false' }}"
           data-item-is-available="{{ item.is_available|yesno:'true,false' }}"
-          data-item-category-name="{{ item.category_name|default_if_none:'' }}"
-          onclick="openItemModal({id:'{{ item.id }}', name:'{{ item.name|escapejs }}', description:'{{ item.description|escapejs }}', price:{{ item.price }}, image:'{{ item.image|escapejs }}', is_veg:{{ item.is_veg|yesno:'true,false' }}, is_available:{{ item.is_available|yesno:'true,false' }}, category_name:'{{ item.category_name|escapejs }}'})">        
+          data-item-category-name="{{ item.category_name|default_if_none:'' }}">
+
           <!-- Title row -->
+
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.3rem;">
           <h3 class="menu-card__title" style="margin:0;">{{ item.name }}</h3>
           {% if item.is_veg %}
