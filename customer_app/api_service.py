@@ -22,7 +22,7 @@ def _post(url, payload):
         return {"ok": False, "error": f"Server error {resp.status_code}"}
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
         return {"ok": False, "error": "Could not connect to server. Please try again."}
-    except Exception as e:
+    except Exception:
         return {"ok": False, "error": "An unexpected error occurred."}
 
 def _build_image_url(raw_image):
@@ -154,6 +154,85 @@ def register(name, phone, email, password):
     # This typically means the backend doesn't accept password via CreateCustomer
     return {"ok": False, "error": "Account created but could not log in automatically. Please try logging in manually once your account is activated."}
 
+# ---- Address ----
+
+def get_saved_addresses(token):
+    """Fetch customer's saved delivery addresses."""
+    if not token or token.startswith("guest-"):
+        return {"ok": True, "data": []}
+    result = _post(f"{API_BASE}/Api/GetNearestAddresses", {
+        "CustomerID": token
+    })
+    if not result["ok"]:
+        return {"ok": True, "data": []}
+    data = result["data"]
+    if isinstance(data, list):
+        return {"ok": True, "data": [
+            {
+                "id":           str(a.get("AddressID", a.get("AddressId", ""))),
+                "friendly_name": a.get("FriendlyName", "Home"),
+                "address1":     a.get("Address1", ""),
+                "address2":     a.get("Address2", ""),
+                "landmark":     a.get("Landmark", ""),
+                "city":         a.get("City", ""),
+                "state":        a.get("State", ""),
+                "postal_code":  a.get("PostalCode", ""),
+                "address_type": a.get("AddressType", "Home"),
+                "area_id":      str(a.get("AreaID", a.get("AreaId", "1"))),
+            }
+            for a in data
+        ]}
+    return {"ok": True, "data": []}
+
+def update_address(token, address_id, data):
+    """Update an existing saved address."""
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Not logged in."}
+    return _post(f"{API_BASE}/Api/UpdateAddress", {
+        "CustomerID":   token,
+        "AddressID":    int(address_id),
+        "FriendlyName": data.get("friendly_name", "Home"),
+        "Address1":     data.get("address1", ""),
+        "Address2":     data.get("address2", ""),
+        "Landmark":     data.get("landmark", ""),
+        "PostalCode":   data.get("postal_code", ""),
+        "AreaID":       data.get("area_id", "1"),
+        "Latitude":     "0",
+        "Longitude":    "0",
+        "City":         data.get("city", ""),
+        "State":        data.get("state", ""),
+        "Country":      "India",
+        "AddressType":  data.get("address_type", "Home"),
+    })
+
+def remove_address(token, address_id):
+    """Delete a saved address by AddressID."""
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Not logged in."}
+    return _post(f"{API_BASE}/Api/RemoveAddress", {
+        "CustomerID": token,
+        "AddressID":  int(address_id),
+    })
+
+def get_areas():
+    """
+    Fetch list of delivery areas for address form dropdown.
+    ⚠ BACKEND NOTE: Confirm exact field names AreaId vs AreaID.
+    """
+    result = _post(f"{API_BASE}/Api/GetArea", {})
+    if not result["ok"]:
+        return {"ok": True, "data": []}
+    data = result["data"]
+    if isinstance(data, list):
+        return {"ok": True, "data": [
+            {
+                "id":   str(a.get("AreaId", a.get("AreaID", a.get("areaId", "")))),
+                "name": a.get("AreaName", a.get("Name", ""))
+            }
+            for a in data if a.get("AreaName") or a.get("Name")
+        ]}
+    return {"ok": True, "data": []}
+
 def get_profile(token):
     """Fetch customer details using CustomerID."""
     if not token or token.startswith("guest-"):
@@ -214,7 +293,7 @@ def get_shop_status():
     except Exception:
         return {"is_closed": False, "message": ""}
 
-def get_categories(token=None):
+def get_categories(token=None): # reserved for future personalized results
     """Fetch product categories from Lazzatt."""
     result = _post(f"{API_BASE}/Api/GetProductType", {})
     if not result["ok"]:
@@ -229,7 +308,7 @@ def get_categories(token=None):
     ]
     return {"ok": True, "data": categories}
 
-def get_menu_items(token=None, category_id=None, search=None):
+def get_menu_items(token=None, category_id=None, search=None): # reserved for future personalized results
     """Fetch menu items from Lazzatt API."""
 
     if search:
@@ -260,10 +339,11 @@ def get_menu_items(token=None, category_id=None, search=None):
         return {"ok": False, "error": result.get("error", "Could not load menu.")}
 
     items = [_map_product(p) for p in result["data"]]
-    cache.set("wtf_all_products", result["data"], timeout=300)
+    if not category_id:
+        cache.set("wtf_all_products", result["data"], timeout=300)
     return {"ok": True, "data": items}
 
-def get_menu_item_detail(item_id, token=None):
+def get_menu_item_detail(item_id, token=None): # reserved for future personalized results
     """
     Fetch a single product by ID.
     Uses cached product list if available - avoids a full API call on every detail page visit.
@@ -293,6 +373,215 @@ def get_menu_item_detail(item_id, token=None):
             return {"ok": True, "data": _map_product(raw_item)}
 
     return {"ok": False, "error": "Item not found."}
+
+def get_all_banners():
+    """
+    Fetch promotional banners for homepage.
+    ⚠ BACKEND NOTE: Field names in response unknown — using multiple fallbacks.
+    Ask backend: BannerImage, BannerTitle, BannerLink field names?
+    """
+    result = _post(f"{API_BASE}/Api/GetAllBanner", {})
+    if not result["ok"]:
+        return {"ok": True, "data": []}
+    data = result["data"]
+    if isinstance(data, list):
+        banners = []
+        for b in data:
+            img = b.get("BannerImage", b.get("Image", b.get("ImagePath", "")))
+            banners.append({
+                "id":    str(b.get("BannerID", b.get("BannerId", b.get("Id", "")))),
+                "title": b.get("BannerTitle", b.get("Title", b.get("Name", ""))),
+                "image": _build_image_url(img) if img else "",
+                "link":  b.get("BannerLink", b.get("Link", "")),
+            })
+        return {"ok": True, "data": banners}
+    return {"ok": True, "data": []}
+
+def get_all_offers():
+    """Fetch all active offers/promotions."""
+    result = _post(f"{API_BASE}/Api/GetAllOffer", {})
+    if not result["ok"]:
+        return {"ok": True, "data": []}
+    data = result["data"]
+    if isinstance(data, list):
+        return {"ok": True, "data": [
+            {
+                "id":          str(o.get("OfferID", o.get("OfferId", o.get("offerID", "")))),
+                "title":       o.get("OfferTitle", o.get("Title", o.get("Name", ""))),
+                "description": o.get("OfferDescription", o.get("Description", "")),
+                "image":       _build_image_url(o.get("OfferImage", o.get("Image", ""))),
+                "code":        o.get("OfferCode", o.get("Code", "")),
+                "discount":    o.get("Discount", o.get("DiscountValue", 0)),
+                "valid_till":  o.get("ValidTill", o.get("ExpiryDate", "")),
+            }
+            for o in data
+        ]}
+    return {"ok": True, "data": []}
+
+def get_offer_detail(offer_id):
+    """Fetch detailed info for a single offer."""
+    result = _post(f"{API_BASE}/Api/OfferDetail", {
+        "offerID": int(offer_id)
+    })
+    if not result["ok"]:
+        return result
+    data = result["data"]
+    if isinstance(data, dict):
+        return {"ok": True, "data": {
+            "id":          str(data.get("OfferID", offer_id)),
+            "title":       data.get("OfferTitle", data.get("Title", "")),
+            "description": data.get("OfferDescription", data.get("Description", "")),
+            "image":       _build_image_url(data.get("OfferImage", data.get("Image", ""))),
+            "code":        data.get("OfferCode", data.get("Code", "")),
+            "discount":    data.get("Discount", 0),
+            "valid_till":  data.get("ValidTill", ""),
+            "terms":       data.get("Terms", data.get("TermsConditions", "")),
+        }}
+    return {"ok": False, "error": "Offer not found."}
+
+def get_loyalty_program():
+    """Fetch loyalty program rules and description."""
+    result = _post(f"{API_BASE}/Api/GetLoyaltyProgram", {})
+    if not result["ok"]:
+        return {"ok": True, "data": {}}
+    data = result["data"]
+    if isinstance(data, dict):
+        return {"ok": True, "data": data}
+    if isinstance(data, list) and data:
+        return {"ok": True, "data": data[0]}
+    return {"ok": True, "data": {}}
+
+def get_loyalty_points(token):
+    """Fetch customer's current loyalty point balance."""
+    if not token or token.startswith("guest-"):
+        return {"ok": True, "data": {"points": 0, "value": 0}}
+    result = _post(f"{API_BASE}/Api/GetLoyaltyPoint", {
+        "CustomerID": int(token)
+    })
+    if not result["ok"]:
+        return {"ok": True, "data": {"points": 0, "value": 0}}
+    data = result["data"]
+    if isinstance(data, dict):
+        points = data.get("LoyaltyPoint", data.get("Points", data.get("TotalPoints", 0)))
+        value  = data.get("PointValue",   data.get("Value", 0))
+        return {"ok": True, "data": {"points": points, "value": value}}
+    if isinstance(data, list) and data:
+        first  = data[0]
+        points = first.get("LoyaltyPoint", first.get("Points", 0))
+        value  = first.get("PointValue",   0)
+        return {"ok": True, "data": {"points": points, "value": value}}
+    return {"ok": True, "data": {"points": 0, "value": 0}}
+
+def get_redeem_balance(token):
+    """
+    Fetch how many points can be redeemed and their monetary value.
+    ⚠ BACKEND NOTE: Unclear if IsRedeemPoint=true in OrderPlaced
+    automatically deducts or needs a separate step. Confirm with backend.
+    """
+    if not token or token.startswith("guest-"):
+        return {"ok": True, "data": {"points": 0, "value": 0}}
+    result = _post(f"{API_BASE}/Api/BalanceRedeemPoint", {
+        "CustomerId": int(token)
+    })
+    if not result["ok"]:
+        return {"ok": True, "data": {"points": 0, "value": 0}}
+    data = result["data"]
+    if isinstance(data, dict):
+        return {"ok": True, "data": {
+            "points": data.get("RedeemPoint", data.get("Points", data.get("Balance", 0))),
+            "value":  data.get("RedeemValue", data.get("Value",  data.get("Amount", 0))),
+        }}
+    return {"ok": True, "data": {"points": 0, "value": 0}}
+
+def submit_order_rating(token, order_id, rating, review=""):
+    """
+    Submit star rating + review for a completed order.
+    ⚠ BACKEND NOTE: DetailRating array needs ProductId for each item.
+    Currently sending empty array — confirm if this is required.
+    """
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Not logged in."}
+    return _post(f"{API_BASE}/Api/OrderRating", {
+        "OrderId":      int(order_id),
+        "OrderRating":  str(rating),
+        "WrongStatus":  "no",
+        "OrderReview":  review,
+        "DetailRating": [],
+    })
+
+def get_company_info():
+    """
+    Fetch restaurant company info for footer/about page.
+    ⚠ BACKEND NOTE: Postman body has SaleBillID and Remark — these look
+    like test data. Try sending empty body {} first.
+    """
+    result = _post(f"{API_BASE}/Api/GetCompany", {})
+    if not result["ok"]:
+        return {"ok": True, "data": {}}
+    data = result["data"]
+    if isinstance(data, dict):
+        return {"ok": True, "data": {
+            "name":    data.get("CompanyName", data.get("Name", "")),
+            "phone":   data.get("Phone",       data.get("ContactNumber", data.get("Mobile", ""))),
+            "email":   data.get("Email",       ""),
+            "address": data.get("Address",     data.get("CompanyAddress", "")),
+            "about":   data.get("AboutUs",     data.get("About", data.get("Description", ""))),
+            "gst":     data.get("GSTNumber",   data.get("GST", "")),
+        }}
+    return {"ok": True, "data": {}}
+
+def get_cms_pages(token=None):
+    """
+    Fetch CMS content pages like About Us, Terms & Conditions, Privacy Policy.
+    ⚠ BACKEND NOTE: CustomerId is sent in Postman — unclear if it's required.
+    Using "0" for guests.
+    """
+    customer_id = token if (token and not token.startswith("guest-")) else "0"
+    result = _post(f"{API_BASE}/Api/GetAllPages", {
+        "CustomerId": customer_id
+    })
+    if not result["ok"]:
+        return {"ok": True, "data": []}
+    data = result["data"]
+    if isinstance(data, list):
+        return {"ok": True, "data": [
+            {
+                "id":      str(p.get("PageID", p.get("PageId", p.get("Id", "")))),
+                "title":   p.get("PageTitle",   p.get("Title",   p.get("Name", ""))),
+                "content": p.get("PageContent", p.get("Content", p.get("Description", ""))),
+                "slug":    p.get("PageSlug",    p.get("Slug",    "")),
+            }
+            for p in data
+        ]}
+    return {"ok": True, "data": []}
+
+# ---- Password ----
+
+def change_password(token, old_password, new_password):
+    """
+    Change password for logged-in user.
+    ⚠ BACKEND NOTE: Postman doesn't include CustomerID in body —
+    we're adding it assuming it's required. Confirm with backend team.
+    """
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Not logged in."}
+    return _post(f"{API_BASE}/Api/ChangePassword", {
+        "CustomerID":  token,
+        "OldPassword": old_password,
+        "NewPassword": new_password,
+    })
+
+def forgot_password(phone, new_password):
+    """
+    Reset password via mobile number.
+    ⚠ BACKEND NOTE: Unclear if this sends OTP first or resets directly.
+    Based on Postman body, appears to reset directly.
+    Confirm with backend team if OTP step exists.
+    """
+    return _post(f"{API_BASE}/Api/ForgotPassword", {
+        "CustomerMobile": phone,
+        "Password":       new_password,
+    })
 
 # ---- Cart -----
 
@@ -331,7 +620,7 @@ def get_cart(token):
 
     return {"ok": True, "data": _build_cart_from_api(result["data"])}
 
-def add_to_cart(token, item_id, quantity, special_instructions=""):
+def add_to_cart(token, item_id, quantity, special_instructions=""): # Lazzatt API doesn't support special instructions — kept for interface consistency
     """Add item to cart. Requires logged-in user (CustomerID)."""
     if not token or token.startswith("guest-"):
         return {"ok": False, "error": "Please log in to add items to cart."}
@@ -420,7 +709,7 @@ def clear_cart(token):
 
 # --- Orders ----
 
-def place_order(token, delivery_address, special_note=""):
+def place_order(token, delivery_address, special_note="", redeem_points=False):
     if not token or token.startswith("guest-"):
         return {"ok": False, "error": "Please log in to place an order."}
 
@@ -451,7 +740,7 @@ def place_order(token, delivery_address, special_note=""):
         "AddressID":            address_id,
         "PaymentMethod":        2,          # 2 = Online payment
         "OrderType":            1,          # 1 = Delivery
-        "IsRedeemPoint":        False,
+        "IsRedeemPoint":        redeem_points,
         "Remarks":              special_note,
         "DeliveryCharges":      0,
         "PorterOrderID":        0,
@@ -508,6 +797,35 @@ def get_order_detail(token, order_id):
             return {"ok": True, "data": _map_order(raw_order)}
 
     return {"ok": False, "error": "Order not found."}
+
+def reorder(token):
+    """
+    Re-add last order items to cart.
+    ⚠ BACKEND NOTE: Postman only shows CustomerID in body.
+    Unclear if this re-orders the LAST order or a specific one.
+    Confirm with backend whether an OrderID/SaleBillID is needed.
+    """
+    if not token or token.startswith("guest-"):
+        return {"ok": False, "error": "Please log in."}
+    return _post(f"{API_BASE}/Api/Reorder", {
+        "CustomerID": token
+    })
+
+def get_live_orders(token):
+    """Fetch active in-progress orders for live tracking."""
+    if not token or token.startswith("guest-"):
+        return {"ok": True, "data": []}
+    result = _post(f"{API_BASE}/Api/GetLiveOrders", {
+        "CustomerID": int(token)
+    })
+    if not result["ok"]:
+        return {"ok": True, "data": []}
+    data = result["data"]
+    if isinstance(data, list):
+        return {"ok": True, "data": data}
+    if isinstance(data, dict):
+        return {"ok": True, "data": [data]}
+    return {"ok": True, "data": []}
 
 # ---- Payment ----
 

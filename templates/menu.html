@@ -26,6 +26,27 @@
   </div>
 </div>
 
+{% if banners %}
+<div style="background:white;border-bottom:1px solid #e9e0d8;padding:0.75rem 0;overflow:hidden;">
+  <div class="container-wtf">
+    <div
+      style="display:flex;gap:1rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;">
+      {% for banner in banners %}
+      {% if banner.image %}
+      <img src="{{ banner.image }}" alt="{{ banner.title }}"
+        style="height:80px;border-radius:8px;flex-shrink:0;object-fit:cover;" onerror="this.style.display='none'">
+      {% elif banner.title %}
+      <div
+        style="background:linear-gradient(135deg,#C0392B,#E67E22);border-radius:8px;padding:0.5rem 1.2rem;flex-shrink:0;display:flex;align-items:center;color:white;font-weight:700;font-size:0.85rem;white-space:nowrap;">
+        🎉 {{ banner.title }}
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% if shop_closed %}
 <div
   style="background:#fdecea;border-bottom:2px solid #C0392B;padding:0.75rem 1rem;text-align:center;font-weight:700;color:#C0392B;font-size:0.9rem;">
@@ -77,12 +98,25 @@
       <img src="{{ item.image }}" alt="{{ item.name }}" class="menu-card__img" loading="lazy"
         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       {% endif %}
-      <div class="menu-card__img-placeholder" {% if item.image %}style="display:none" {% endif %}>🍽️</div>
+      {% if item.image %}
+      <div class="menu-card__img-placeholder" style="display:none;">🍽️</div>
+      {% else %}
+      <div class="menu-card__img-placeholder">🍽️</div>
+      {% endif %}
 
       <!-- Body -->
-      <div class="menu-card__body">
-
-        <!-- Title row -->
+      <div class="menu-card__body" 
+          style="cursor:pointer;" 
+          data-item-id="{{ item.id }}" 
+          data-item-name="{{ item.name }}"
+          data-item-description="{{ item.description|default_if_none:'' }}" 
+          data-item-price="{{ item.price }}"
+          data-item-image="{{ item.image|default_if_none:'' }}" 
+          data-item-is-veg="{{ item.is_veg|yesno:'true,false' }}"
+          data-item-is-available="{{ item.is_available|yesno:'true,false' }}"
+          data-item-category-name="{{ item.category_name|default_if_none:'' }}"
+          onclick="openItemModal({id:'{{ item.id }}', name:'{{ item.name|escapejs }}', description:'{{ item.description|escapejs }}', price:{{ item.price }}, image:'{{ item.image|escapejs }}', is_veg:{{ item.is_veg|yesno:'true,false' }}, is_available:{{ item.is_available|yesno:'true,false' }}, category_name:'{{ item.category_name|escapejs }}'})">        
+          <!-- Title row -->
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.3rem;">
           <h3 class="menu-card__title" style="margin:0;">{{ item.name }}</h3>
           {% if item.is_veg %}
@@ -110,7 +144,7 @@
         </p>
 
         <!-- Price + Add button -->
-        <div class="menu-card__footer">
+        <div class="menu-card__footer" onclick="event.stopPropagation()">
           <span class="menu-card__price">₹{{ item.price|floatformat:0 }}</span>
 
           {% if item.is_available %}
@@ -145,10 +179,24 @@
     <h4>No items found</h4>
     <p>
       {% if search_query %}Try a different search term or{% else %}No menu items available in this category.{% endif %}
-      <a href="{% url 'menu' %}">view all items</a>.
+      <!-- <a href="{% url 'menu' %}">view all items</a>. -->
+      <a href="{% url 'menu' %}" class="cat-pill {% if not selected_category %}active{% endif %}">All Items</a>
     </p>
   </div>
   {% endif %}
 
+</div>
+<!-- Item Detail Modal -->
+<div id="item-modal-overlay" class="item-modal-overlay">
+  <div id="item-modal-box" class="item-modal-box">
+    <div class="item-modal__close-row">
+      <button onclick="closeItemModal()" class="item-modal__close" aria-label="Close item details">
+        ×
+      </button>
+    </div>
+    <div id="item-modal-content">
+      <!-- filled by JS -->
+    </div>
+  </div>
 </div>
 {% endblock %}

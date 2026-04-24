@@ -21,10 +21,10 @@
       style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid #f0e8de;">
       <div>
         <div style="font-weight:700;">{{ item.name }}</div>
-        <div style="font-size:0.82rem;color:#6c757d;">₹{{ item.unit_price }} × {{ item.quantity }}</div>
+        <div style="font-size:0.82rem;color:#6c757d;">₹{{ item.unit_price|floatformat:0 }} × {{ item.quantity }}</div>
         {% if item.special_instructions %}<div style="font-size:0.78rem;color:#6c757d;font-style:italic;">{{ item.special_instructions }}</div>{% endif %}
       </div>
-      <div style="font-weight:900;color:#C0392B;">₹{{ item.total_price }}</div>
+      <div style="font-weight:900;color:#C0392B;">₹{{ item.total_price|floatformat:0 }}</div>
     </div>
     {% endfor %}
 
@@ -59,6 +59,23 @@
     {% endif %}
   </div>
   {% endif %}
+  <!-- Rating Widget — shown for delivered orders -->
+  {% if order.status == "Delivered" or order.status == "delivered" %}
+  <div class="checkout-card" id="rating-section">
+    <h5>⭐ Rate Your Order</h5>
+    <p style="color:#6c757d;font-size:0.88rem;margin-bottom:1rem;">How was your experience?</p>
+    <div id="star-container" style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+      {% for i in "12345" %}
+      <button onclick="setRating({{ forloop.counter }})" class="star-btn" data-star="{{ forloop.counter }}"
+        style="background:none;border:none;font-size:2rem;cursor:pointer;transition:transform 0.1s;padding:0;">☆</button>
+      {% endfor %}
+    </div>
+    <textarea id="rating-review" class="form-control" rows="2" placeholder="Tell us more (optional)..."
+      style="margin-bottom:1rem;"></textarea>
+    <button onclick="submitRating('{{ order.id|default:order.order_id }}')" class="btn-primary-wtf"
+      style="width:auto;padding:0.6rem 1.5rem;">Submit Rating</button>
+  </div>
+  {% endif %}
 
   <div style="margin-top:1rem;">
     <a href="{% url 'menu' %}" class="btn-primary-wtf"
@@ -67,4 +84,32 @@
     </a>
   </div>
 </div>
+{% block extra_js %}
+<script>
+  let selectedRating = 0;
+  function setRating(val) {
+    selectedRating = val;
+    document.querySelectorAll('.star-btn').forEach((btn, idx) => {
+      btn.textContent = idx < val ? '★' : '☆';
+      btn.style.color = idx < val ? '#E67E22' : '';
+    });
+  }
+  function submitRating(orderId) {
+    if (!selectedRating) { alert('Please select a rating.'); return; }
+    const review = document.getElementById('rating-review').value;
+    fetch(`/orders/${orderId}/rate/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      body: JSON.stringify({ rating: selectedRating, review: review })
+    }).then(r => r.json()).then(data => {
+      const section = document.getElementById('rating-section');
+      if (data.ok) {
+        section.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#2e7d32;font-weight:700;">⭐ Thank you for your feedback!</div>';
+      } else {
+        alert(data.error || 'Could not submit rating.');
+      }
+    }).catch(() => alert('Connection error.'));
+  }
+</script>
+{% endblock %}
 {% endblock %}

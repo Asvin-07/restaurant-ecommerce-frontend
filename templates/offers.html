@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Offers & Promotions{% endblock %}
+{% block content %}
+<div class="container-wtf page-section">
+    <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">🎉 Offers & Promotions</h2>
+    {% if offers %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;">
+        {% for offer in offers %}
+        <a href="{% url 'offer_detail' offer.id %}" style="text-decoration:none;color:inherit;">
+            <div class="menu-card" style="cursor:pointer;">
+                {% if offer.image %}
+                <img src="{{ offer.image }}" alt="{{ offer.title }}" class="menu-card__img"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                {% endif %}
+                <div class="menu-card__img-placeholder" {% if offer.image %}style="display:none;" {% endif %}
+                    style="font-size:3rem;">🎁</div>
+                <div class="menu-card__body">
+                    <h3 class="menu-card__title">{{ offer.title|default:"Special Offer" }}</h3>
+                    {% if offer.code %}
+                    <div
+                        style="background:#fff8e1;border:1px dashed #E67E22;border-radius:8px;padding:0.4rem 0.8rem;margin-bottom:0.75rem;font-size:0.85rem;font-weight:800;color:#E67E22;display:inline-block;">
+                        CODE: {{ offer.code }}
+                    </div>
+                    {% endif %}
+                    <p class="menu-card__desc">{{ offer.description|default:""|truncatechars:80 }}</p>
+                    <div class="menu-card__footer">
+                        {% if offer.discount %}<span style="color:#2e7d32;font-weight:900;font-size:1rem;">{{
+                            offer.discount }}% OFF</span>{% endif %}
+                        {% if offer.valid_till %}<span style="font-size:0.78rem;color:#6c757d;">Valid till {{
+                            offer.valid_till }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="icon">🎁</span>
+        <h4>No offers right now</h4>
+        <p style="color:#6c757d;">Check back soon for great deals!</p>
+        <a href="{% url 'menu' %}" class="btn-primary-wtf"
+            style="display:inline-block;width:auto;padding:0.7rem 2rem;text-decoration:none;margin-top:1rem;">Browse
+            Menu →</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

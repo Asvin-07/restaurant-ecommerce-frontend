@@ -21,7 +21,7 @@
       </div>
       <div class="order-info-row">
         <span class="label">Total Amount</span>
-        <span class="value" style="color:#C0392B;">₹{{ order.total_amount|default:order.total }}</span>
+        <span class="value" style="color:#C0392B;">₹{{ order.total_amount|floatformat:0|default:order.total|floatformat:0 }}</span>
       </div>
       {% if order.delivery_address %}
       <div class="order-info-row">

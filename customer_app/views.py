@@ -1,10 +1,3 @@
-"""
-- Menu and item browsing works without login (guests welcome)
-- Cart works for guests using session-based token
-- Checkout, orders, profile require login
-- Guest cart merges into user cart after login at checkout
-"""
-
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
@@ -12,7 +5,6 @@ from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 import json
 import uuid
-
 from . import api_service as api
 
 # ---- Auth Helpers ----
@@ -167,6 +159,8 @@ def menu_view(request):
     cat_result   = api.get_categories(token=token)
     categories   = cat_result.get("data", []) if cat_result["ok"] else []
     shop_status = api.get_shop_status()
+    banners_result = api.get_all_banners()
+    banners = banners_result.get("data", [])
 
     items_result = api.get_menu_items(
         token=token,
@@ -187,6 +181,7 @@ def menu_view(request):
         "user":              _get_user(request),
         "shop_closed":       shop_status.get("is_closed", False),
         "shop_closed_message": shop_status.get("message", ""),
+        "banners": banners,
     })
 
 def item_detail_view(request, item_id):
@@ -201,8 +196,6 @@ def item_detail_view(request, item_id):
         "cart_count": _get_cart_count(request),
         "user":       _get_user(request),
     })
-
-# ---- Cart AJAX Views (works for guests) ----
 
 @require_http_methods(["POST"])
 def add_to_cart_view(request):
@@ -363,10 +356,12 @@ def checkout_view(request):
                 "user": _get_user(request),
             })
 
+        redeem_points = request.POST.get("redeem_points") == "1"
         order_result = api.place_order(
             token=token,
             delivery_address=delivery_address,
-            special_note=special_note
+            special_note=special_note,
+            redeem_points=redeem_points
         )
         if not order_result["ok"]:
             messages.error(request, order_result.get("error", "Could not place order."))
@@ -397,6 +392,7 @@ def checkout_view(request):
         "cart":       cart_data,
         "cart_count": sum(int(item.get("quantity", 0)) for item in cart_data.get("items", [])),
         "user":       _get_user(request),
+        "redeem_balance": api.get_redeem_balance(token=token).get("data", {"points": 0, "value": 0}),
     })
 
 @_login_required
@@ -511,3 +507,190 @@ def menu_items_json(request):
     if result["ok"]:
         return JsonResponse({"ok": True, "items": result["data"]})
     return JsonResponse({"ok": False, "error": result.get("error", "Could not load items.")})
+
+@_login_required
+def change_password_view(request):
+    token = _get_token(request)
+    if request.method == "POST":
+        old_pw  = request.POST.get("old_password", "").strip()
+        new_pw  = request.POST.get("new_password", "").strip()
+        confirm = request.POST.get("confirm_password", "").strip()
+        if not old_pw or not new_pw:
+            messages.error(request, "All fields are required.")
+        elif new_pw != confirm:
+            messages.error(request, "New passwords do not match.")
+        elif len(new_pw) < 4:
+            messages.error(request, "Password must be at least 4 characters.")
+        else:
+            result = api.change_password(token=token, old_password=old_pw, new_password=new_pw)
+            if result["ok"]:
+                messages.success(request, "Password changed successfully.")
+                return redirect("profile")
+            else:
+                messages.error(request, result.get("error", "Could not change password."))
+    return render(request, "change_password.html", {
+        "cart_count": 0, "user": _get_user(request),
+    })
+
+def forgot_password_view(request):
+    if _get_token(request):
+        return redirect("menu")
+    if request.method == "POST":
+        phone   = request.POST.get("phone", "").strip()
+        new_pw  = request.POST.get("new_password", "").strip()
+        confirm = request.POST.get("confirm_password", "").strip()
+        if not phone or not new_pw:
+            messages.error(request, "All fields are required.")
+        elif new_pw != confirm:
+            messages.error(request, "Passwords do not match.")
+        elif len(new_pw) < 4:
+            messages.error(request, "Password must be at least 4 characters.")
+        else:
+            result = api.forgot_password(phone=phone, new_password=new_pw)
+            if result["ok"]:
+                messages.success(request, "Password reset successfully. Please log in.")
+                return redirect("login")
+            else:
+                messages.error(request, result.get("error", "Could not reset password. Check your mobile number."))
+    return render(request, "forgot_password.html", {"cart_count": 0, "user": {}})
+
+@_login_required
+def addresses_view(request):
+    token = _get_token(request)
+    if request.method == "POST":
+        action     = request.POST.get("action", "")
+        address_id = request.POST.get("address_id", "")
+        if action == "delete" and address_id:
+            result = api.remove_address(token=token, address_id=address_id)
+            if result["ok"]:
+                messages.success(request, "Address removed.")
+            else:
+                messages.error(request, result.get("error", "Could not remove address."))
+            return redirect("addresses")
+        if action == "update" and address_id:
+            data = {
+                "friendly_name": request.POST.get("friendly_name", "Home"),
+                "address1":      request.POST.get("address1", ""),
+                "address2":      request.POST.get("address2", ""),
+                "landmark":      request.POST.get("landmark", ""),
+                "city":          request.POST.get("city", ""),
+                "state":         request.POST.get("state", ""),
+                "postal_code":   request.POST.get("postal_code", ""),
+                "area_id":       request.POST.get("area_id", "1"),
+                "address_type":  request.POST.get("address_type", "Home"),
+            }
+            result = api.update_address(token=token, address_id=address_id, data=data)
+            if result["ok"]:
+                messages.success(request, "Address updated.")
+            else:
+                messages.error(request, result.get("error", "Could not update address."))
+            return redirect("addresses")
+    areas_result   = api.get_areas()
+    areas          = areas_result.get("data", [])
+    address_result = api.get_saved_addresses(token=token)
+    saved_addresses = address_result.get("data", [])
+    return render(request, "addresses.html", {
+        "addresses": saved_addresses,
+        "areas":     areas,
+        "cart_count": 0,
+        "user":      _get_user(request),
+    })
+
+@_login_required
+def reorder_view(request, order_id):
+    token = _get_token(request)
+    result = api.reorder(token=token)
+    if result["ok"]:
+        messages.success(request, "Items from your previous order have been added to cart.")
+    else:
+        messages.error(request, result.get("error", "Could not reorder. Please try again."))
+    return redirect("cart")
+
+@_login_required
+def live_orders_view(request):
+    token = _get_token(request)
+    result = api.get_live_orders(token=token)
+    live_orders = result.get("data", [])
+    return render(request, "live_orders.html", {
+        "live_orders": live_orders,
+        "cart_count":  0,
+        "user":        _get_user(request),
+    })
+
+def offers_view(request):
+    result = api.get_all_offers()
+    offers = result.get("data", [])
+    return render(request, "offers.html", {
+        "offers":     offers,
+        "cart_count": _get_cart_count(request),
+        "user":       _get_user(request),
+    })
+
+def offer_detail_view(request, offer_id):
+    result = api.get_offer_detail(offer_id=offer_id)
+    if not result["ok"]:
+        messages.error(request, "Offer not found.")
+        return redirect("offers")
+    return render(request, "offer_detail.html", {
+        "offer":      result["data"],
+        "cart_count": _get_cart_count(request),
+        "user":       _get_user(request),
+    })
+
+@_login_required
+def loyalty_view(request):
+    token = _get_token(request)
+    points_result  = api.get_loyalty_points(token=token)
+    program_result = api.get_loyalty_program()
+    redeem_result  = api.get_redeem_balance(token=token)
+    return render(request, "loyalty.html", {
+        "loyalty_points":  points_result.get("data",  {"points": 0, "value": 0}),
+        "loyalty_program": program_result.get("data", {}),
+        "redeem_balance":  redeem_result.get("data",  {"points": 0, "value": 0}),
+        "cart_count": 0,
+        "user": _get_user(request),
+    })
+
+# ---- Order Rating (AJAX) ----
+
+@_login_required
+@require_http_methods(["POST"])
+
+def submit_rating_view(request, order_id):
+    token = _get_token(request)
+    try:
+        body   = json.loads(request.body)
+        rating = int(body.get("rating", 0))
+        review = str(body.get("review", "")).strip()
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"ok": False, "error": "Invalid request."}, status=400)
+    if not (1 <= rating <= 5):
+        return JsonResponse({"ok": False, "error": "Rating must be 1 to 5."}, status=400)
+    result = api.submit_order_rating(token=token, order_id=order_id, rating=rating, review=review)
+    if result["ok"]:
+        return JsonResponse({"ok": True, "message": "Thank you for your feedback!"})
+    return JsonResponse({"ok": False, "error": result.get("error", "Could not submit rating.")}, status=400)
+
+def company_view(request):
+    result  = api.get_company_info()
+    company = result.get("data", {})
+    return render(request, "company.html", {
+        "company":    company,
+        "cart_count": _get_cart_count(request),
+        "user":       _get_user(request),
+    })
+
+def cms_page_view(request, page_id=None):
+    token  = _get_token(request)
+    result = api.get_cms_pages(token=token)
+    pages  = result.get("data", [])
+    if page_id:
+        page = next((p for p in pages if str(p["id"]) == str(page_id)), None)
+    else:
+        page = pages[0] if pages else None
+    return render(request, "cms_page.html", {
+        "page":       page,
+        "pages":      pages,
+        "cart_count": _get_cart_count(request),
+        "user":       _get_user(request),
+    })

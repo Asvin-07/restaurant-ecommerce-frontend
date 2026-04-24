@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ page.title|default:"Page" }}{% endblock %}
+{% block content %}
+<div class="container-wtf page-section" style="max-width:800px;">
+    {% if pages and pages|length > 1 %}
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+        {% for p in pages %}
+        <a href="{% url 'cms_page' p.id %}" class="cat-pill {% if page.id == p.id %}active{% endif %}">{{ p.title }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if page %}
+    <div class="checkout-card">
+        <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">{{ page.title }}</h2>
+        <div style="color:#6c757d;line-height:1.8;">{{ page.content }}</div>
+    </div>
+    {% else %}
+    <div class="empty-state"><span class="icon">📄</span>
+        <h4>Page not found</h4>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

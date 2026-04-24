@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}About Us{% endblock %}
+{% block content %}
+<div class="container-wtf page-section" style="max-width:700px;">
+    <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">About Us</h2>
+    {% if company %}
+    <div class="checkout-card">
+        {% if company.name %}<h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1rem;">🍽️ {{
+            company.name }}</h3>{% endif %}
+        {% if company.about %}<p style="color:#6c757d;line-height:1.8;margin-bottom:1.5rem;">{{ company.about }}</p>{%
+        endif %}
+        {% if company.address %}
+        <div class="order-info-row"><span class="label">📍 Address</span><span class="value"
+                style="font-size:0.85rem;text-align:right;max-width:300px;">{{ company.address }}</span></div>
+        {% endif %}
+        {% if company.phone %}
+        <div class="order-info-row"><span class="label">📞 Phone</span><span class="value">{{ company.phone }}</span>
+        </div>
+        {% endif %}
+        {% if company.email %}
+        <div class="order-info-row"><span class="label">✉️ Email</span><span class="value">{{ company.email }}</span>
+        </div>
+        {% endif %}
+        {% if company.gst %}
+        <div class="order-info-row"><span class="label">GST</span><span class="value" style="font-size:0.82rem;">{{
+                company.gst }}</span></div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="checkout-card">
+        <h3 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1rem;">🍽️ Way To Food</h3>
+        <p style="color:#6c757d;line-height:1.8;">We are dedicated to bringing you the freshest, most delicious food
+            delivered right to your door. Built as part of a B.Tech project at IIIT Vadodara in partnership with
+            Digisure Technologies.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

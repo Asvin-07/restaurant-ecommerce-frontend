@@ -6,17 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Way To Food{% endblock %} - WTF</title>
   {% load static %}
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=5">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
 </head>
 
-<body class="{% block body_class %}{% endblock %}"data-authenticated="{% if user %}true{% else %}false{% endif %}">
+<body class="{% block body_class %}{% endblock %}" data-authenticated="{% if user %}true{% else %}false{% endif %}">
 
-  <!-- ── Navbar ──────────────────────────────────────────────── -->
+  <!-- --- Navbar ---- -->
   {% block navbar %}
   <nav class="wtf-navbar">
-    <div id="wtf-nav-container" class="container-wtf" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+    <div id="wtf-nav-container" class="container-wtf"
+      style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
       <a href="{% url 'menu' %}" class="navbar-brand" style="text-decoration:none;">
         <div style="line-height:1.1;">
           <span style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#E67E22;">WTF</span>
@@ -38,6 +39,11 @@
           class="nav-link {% if request.resolver_match.url_name == 'menu' %}nav-active{% endif %}"
           style="font-size:0.85rem;font-weight:600;">
           Menu
+        </a>
+        <a href="{% url 'offers' %}"
+          class="nav-link {% if request.resolver_match.url_name == 'offers' %}nav-active{% endif %}"
+          style="font-size:0.85rem;font-weight:600;">
+          Offers
         </a>
         <a href="{% url 'order_history' %}"
           class="nav-link {% if request.resolver_match.url_name == 'order_history' or request.resolver_match.url_name == 'order_detail' %}nav-active{% endif %}"
@@ -64,7 +70,7 @@
   </nav>
   {% endblock navbar %}
 
-  <!-- ── Demo Mode Banner ────────────────────────────────── -->
+  <!-- --- Demo Mode Banner ---- -->
   {% if DEMO_MODE %}
   <div
     style="background:#fff3cd;border-bottom:2px solid #E67E22;padding:0.4rem 1rem;text-align:center;font-size:0.82rem;font-weight:700;color:#856404;">
@@ -72,7 +78,7 @@
   </div>
   {% endif %}
 
-  <!-- ── Location Reminder Banner (Global) ───────────────── -->
+  <!-- --- Location Reminder Banner (Global) ---- -->
   {% block location_reminder %}
   <div id="location-reminder"
     style="display:none; background:#fff8e1; border-bottom:2px solid #E67E22; padding:0.6rem 1rem; align-items:center; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
@@ -86,7 +92,7 @@
   {% endblock location_reminder %}
 
   <main class="wtf-main-content">
-    <!-- ── Django Messages ──────────────────────────────────────── -->
+    <!-- --- Django Messages ---- -->
     {% block global_alerts %}
     {% if messages %}
     <div class="container-wtf" style="padding-top:1rem;">
@@ -101,26 +107,34 @@
     {% endif %}
     {% endblock global_alerts %}
 
-    <!-- ── Main Content ─────────────────────────────────────────── -->
+    <!-- --- Main Content ---- -->
     <div style="display:none;">{% csrf_token %}</div>
     {% block content %}{% endblock %}
   </main>
 
-  {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
+  {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and
+  request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' and
+  request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
   <a href="{% url 'cart' %}" class="cart-badge-btn floating-cart-btn" aria-label="Open cart">
-    🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else %}0 Items{% endif %}</span>
-    <span class="badge-count cart-badge-count" {% if not cart_count %}style="display:none;" {% endif %}>{{cart_count|default:0 }}</span>
+    🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else
+      %}0 Items{% endif %}</span>
+    <span class="badge-count cart-badge-count" {% if not cart_count %}style="display:none;" {% endif
+      %}>{{cart_count|default:0 }}</span>
   </a>
   {% endif %}
 
-  <!-- ── Footer ──────────────────────────────────────────────── -->
+  <!-- --- Footer ---- -->
   {% block footer %}
   <footer class="wtf-footer">
-    <strong>Way To Food</strong> &nbsp;·&nbsp; All rights reserved &copy; 2026 &nbsp;·&nbsp; B.Tech. Project
+    <strong>Way To Food</strong> &nbsp;·&nbsp;
+    <a href="{% url 'about' %}" style="color:rgba(255,255,255,0.6);text-decoration:none;">About</a> &nbsp;·&nbsp;
+    <a href="{% url 'offers' %}" style="color:rgba(255,255,255,0.6);text-decoration:none;">Offers</a> &nbsp;·&nbsp;
+    <a href="{% url 'cms_pages' %}" style="color:rgba(255,255,255,0.6);text-decoration:none;">Terms</a> &nbsp;·&nbsp;
+    All rights reserved &copy; 2026 &nbsp;·&nbsp; B.Tech. Project
   </footer>
   {% endblock footer %}
 
-  <!-- ── Location Popup (Global) ─────────────────────────── -->
+  <!-- --- Location Popup (Global) ---- -->
   <div id="location-overlay"
     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center;">
     <div

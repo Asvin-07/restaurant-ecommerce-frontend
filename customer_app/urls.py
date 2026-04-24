@@ -34,4 +34,30 @@ urlpatterns = [
 
     # Profile
     path('profile/', views.profile_view, name='profile'),
+    
+    # Auth extras
+    path('change-password/', views.change_password_view, name='change_password'),
+    path('forgot-password/', views.forgot_password_view, name='forgot_password'),
+
+    # Addresses
+    path('addresses/', views.addresses_view, name='addresses'),
+
+    # Orders extended
+    path('orders/<str:order_id>/reorder/', views.reorder_view, name='reorder'),
+    path('orders/<str:order_id>/rate/', views.submit_rating_view, name='submit_rating'),
+
+    # Live orders
+    path('live-orders/', views.live_orders_view, name='live_orders'),
+
+    # Offers
+    path('offers/', views.offers_view, name='offers'),
+    path('offers/<str:offer_id>/', views.offer_detail_view, name='offer_detail'),
+
+    # Loyalty
+    path('loyalty/', views.loyalty_view, name='loyalty'),
+
+    # Content pages
+    path('about/', views.company_view, name='about'),
+    path('pages/', views.cms_page_view, name='cms_pages'),
+    path('pages/<str:page_id>/', views.cms_page_view, name='cms_page'),
 ]

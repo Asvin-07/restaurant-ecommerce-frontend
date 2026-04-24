@@ -34,5 +34,26 @@
       </div>
     </form>
   </div>
+  <div class="checkout-card" style="margin-top:1.5rem;">
+    <h5>Account Options</h5>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <a href="{% url 'addresses' %}"
+        style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fdf6ee;border-radius:10px;text-decoration:none;color:inherit;font-weight:700;">
+        📍 My Saved Addresses <span style="color:#C0392B;">→</span>
+      </a>
+      <a href="{% url 'loyalty' %}"
+        style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fdf6ee;border-radius:10px;text-decoration:none;color:inherit;font-weight:700;">
+        ⭐ Loyalty Points <span style="color:#C0392B;">→</span>
+      </a>
+      <a href="{% url 'change_password' %}"
+        style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fdf6ee;border-radius:10px;text-decoration:none;color:inherit;font-weight:700;">
+        🔒 Change Password <span style="color:#C0392B;">→</span>
+      </a>
+      <a href="{% url 'offers' %}"
+        style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fdf6ee;border-radius:10px;text-decoration:none;color:inherit;font-weight:700;">
+        🎉 Offers & Promotions <span style="color:#C0392B;">→</span>
+      </a>
+    </div>
+  </div>
 </div>
 {% endblock %}

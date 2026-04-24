@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}{{ offer.title }}{% endblock %}
+{% block content %}
+<div class="container-wtf page-section" style="max-width:700px;">
+    <a href="{% url 'offers' %}"
+        style="font-weight:700;font-size:0.9rem;color:#C0392B;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;">←
+        All Offers</a>
+    <div class="checkout-card">
+        {% if offer.image %}
+        <img src="{{ offer.image }}" alt="{{ offer.title }}"
+            style="width:100%;border-radius:12px;margin-bottom:1.5rem;max-height:280px;object-fit:cover;"
+            onerror="this.style.display='none'">
+        {% endif %}
+        <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:0.75rem;">{{
+            offer.title|default:"Special Offer" }}</h2>
+        {% if offer.code %}
+        <div
+            style="background:#fff8e1;border:2px dashed #E67E22;border-radius:10px;padding:1rem;margin-bottom:1.25rem;text-align:center;">
+            <div style="font-size:0.8rem;color:#6c757d;font-weight:600;margin-bottom:0.3rem;">USE CODE</div>
+            <div style="font-size:1.8rem;font-weight:900;color:#E67E22;letter-spacing:3px;">{{ offer.code }}</div>
+        </div>
+        {% endif %}
+        {% if offer.discount %}
+        <div style="font-size:1.5rem;font-weight:900;color:#2e7d32;margin-bottom:1rem;">{{ offer.discount }}% OFF</div>
+        {% endif %}
+        {% if offer.description %}
+        <p style="color:#6c757d;line-height:1.7;margin-bottom:1rem;">{{ offer.description }}</p>
+        {% endif %}
+        {% if offer.valid_till %}
+        <p style="font-size:0.85rem;color:#6c757d;margin-bottom:1rem;">⏰ Valid till {{ offer.valid_till }}</p>
+        {% endif %}
+        {% if offer.terms %}
+        <details style="margin-top:1rem;">
+            <summary style="cursor:pointer;font-weight:700;font-size:0.85rem;color:#6c757d;">Terms & Conditions
+            </summary>
+            <p style="color:#6c757d;font-size:0.82rem;line-height:1.6;margin-top:0.5rem;">{{ offer.terms }}</p>
+        </details>
+        {% endif %}
+        <a href="{% url 'menu' %}" class="btn-primary-wtf"
+            style="display:block;text-align:center;margin-top:1.5rem;text-decoration:none;">Order Now & Apply →</a>
+    </div>
+</div>
+{% endblock %}

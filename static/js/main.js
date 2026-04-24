@@ -297,11 +297,20 @@ function renderMenuGrid(items) {
     <div class="menu-card" data-category="${item.category || ''}">
       ${item.image
       ? `<img src="${item.image}" alt="${item.name}" class="menu-card__img" loading="lazy"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">`
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">`
       : ''}
       <div class="menu-card__img-placeholder" ${item.image ? 'style="display:none"' : ''}>🍽️</div>
 
-      <div class="menu-card__body">
+      <div class="menu-card__body"
+          style="cursor:pointer;"
+          data-item-id="${item.id}"
+          data-item-name="${item.name || ''}"
+          data-item-description="${item.description || ''}"
+          data-item-price="${item.price || 0}"
+          data-item-image="${item.image || ''}"
+          data-item-is-veg="${item.is_veg ? 'true' : 'false'}"
+          data-item-is-available="${item.is_available ? 'true' : 'false'}"
+          data-item-category-name="${item.category_name || ''}">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.3rem;">
           <h3 class="menu-card__title" style="margin:0;">${item.name}</h3>
           ${item.is_veg
@@ -318,7 +327,7 @@ function renderMenuGrid(items) {
         </p>
 
         <div class="menu-card__footer">
-          <span class="menu-card__price">₹${item.price}</span>
+          <span class="menu-card__price">₹${Math.round(item.price)}</span>
           ${item.is_available
       ? `<button class="btn-add" data-item-id="${item.id}">+ Add</button>`
       : '<span class="unavailable-label">Unavailable</span>'}
@@ -326,6 +335,61 @@ function renderMenuGrid(items) {
       </div>
     </div>
   `).join('');
+}
+
+function getMenuItemFromCard(cardBody) {
+  if (!cardBody) return null;
+  const { dataset } = cardBody;
+
+  return {
+    id: dataset.itemId || '',
+    name: dataset.itemName || '',
+    description: dataset.itemDescription || '',
+    price: Number(dataset.itemPrice || 0),
+    image: dataset.itemImage || '',
+    is_veg: dataset.itemIsVeg === 'true',
+    is_available: dataset.itemIsAvailable === 'true',
+    category_name: dataset.itemCategoryName || ''
+  };
+}
+
+function openItemModal(item) {
+  const overlay = document.getElementById('item-modal-overlay');
+  const content = document.getElementById('item-modal-content');
+  if (!overlay || !content) return;
+
+  const vegBadge = item.is_veg
+    ? '<span class="veg-badge" title="Vegetarian"></span>'
+    : '<span class="nveg-badge" title="Non-Vegetarian"></span>';
+
+  content.innerHTML = `
+    <div class="item-modal__media">
+      ${item.image
+      ? `<img src="${item.image}" alt="${item.name}" class="item-modal__image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">`
+      : ''}
+      <div class="item-modal__placeholder" style="display:${item.image ? 'none' : 'flex'};">🍽️</div>
+    </div>
+    <div class="item-modal__body">
+      <div class="item-modal__meta">
+        ${vegBadge}
+        ${item.category_name ? `<span class="item-modal__category">${item.category_name}</span>` : ''}
+      </div>
+      <h2 class="item-modal__title">${item.name}</h2>
+      <p class="item-modal__description">${item.description || 'A delicious dish prepared fresh with the finest ingredients.'}</p>
+      <div class="item-modal__price">₹${Math.round(item.price)}</div>
+      ${item.is_available
+      ? `<button onclick="addToCart('${item.id}', 1); closeItemModal();" class="btn-primary-wtf item-modal__action">🛒 Add to Cart</button>`
+      : `<div class="item-modal__unavailable">⚠ Currently unavailable</div>`}
+    </div>
+  `;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeItemModal() {
+  const overlay = document.getElementById('item-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 // ─── DOM Ready ───
@@ -389,7 +453,13 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast('Connection error.', 'error');
         });
     });
+  const modalOverlay = document.getElementById('item-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', function (e) {
+      if (e.target === this) closeItemModal();
+    });
   }
+}
 
   if (menuGrid) {
     menuGrid.addEventListener('click', function (e) {
@@ -415,50 +485,57 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const ctrlBtn = e.target.closest('.inline-qty-ctrl .qty-btn');
-      if (!ctrlBtn) return;
+      if (ctrlBtn) {
+        const ctrl = ctrlBtn.closest('.inline-qty-ctrl');
+        const display = ctrl ? ctrl.querySelector('.qty-display') : null;
+        if (!ctrl || !display) return;
 
-      const ctrl = ctrlBtn.closest('.inline-qty-ctrl');
-      const display = ctrl ? ctrl.querySelector('.qty-display') : null;
-      if (!ctrl || !display) return;
+        const itemId = ctrl.dataset.itemId;
+        const previousQty = parseInt(display.textContent || '1', 10);
+        let qty = previousQty;
 
-      const itemId = ctrl.dataset.itemId;
-      const previousQty = parseInt(display.textContent || '1', 10);
-      let qty = previousQty;
+        if (ctrlBtn.classList.contains('plus')) {
+          qty += 1;
+          display.textContent = qty;
+          addToCart(itemId, 1);
+          return;
+        }
 
-      if (ctrlBtn.classList.contains('plus')) {
-        qty += 1;
-        display.textContent = qty;
-        addToCart(itemId, 1);
+        qty -= 1;
+        if (qty <= 0) {
+          const card = ctrl.closest('.menu-card');
+          // Optimistic: reflect removal instantly on menu card.
+          ctrl.outerHTML = `<button class="btn-add" data-item-id="${itemId}">+ Add</button>`;
+          decrementCartByItem(itemId).then(data => {
+            if (!(data && data.ok)) {
+              const btn = (card || menuGrid).querySelector(`.btn-add[data-item-id="${itemId}"]`);
+              if (btn) {
+                btn.outerHTML = `
+                  <div class="inline-qty-ctrl" data-item-id="${itemId}">
+                    <button class="qty-btn minus">−</button>
+                    <span class="qty-display">1</span>
+                    <button class="qty-btn plus">+</button>
+                  </div>`;
+              }
+            }
+          });
+        } else {
+          // Optimistic: reflect decrement instantly on menu card.
+          display.textContent = qty;
+          decrementCartByItem(itemId).then(data => {
+            if (!(data && data.ok)) {
+              display.textContent = previousQty;
+            }
+          });
+        }
         return;
       }
 
-      qty -= 1;
-      if (qty <= 0) {
-        const card = ctrl.closest('.menu-card');
-        // Optimistic: reflect removal instantly on menu card.
-        ctrl.outerHTML = `<button class="btn-add" data-item-id="${itemId}">+ Add</button>`;
-        decrementCartByItem(itemId).then(data => {
-          if (!(data && data.ok)) {
-            const btn = (card || menuGrid).querySelector(`.btn-add[data-item-id="${itemId}"]`);
-            if (btn) {
-              btn.outerHTML = `
-                <div class="inline-qty-ctrl" data-item-id="${itemId}">
-                  <button class="qty-btn minus">−</button>
-                  <span class="qty-display">1</span>
-                  <button class="qty-btn plus">+</button>
-                </div>`;
-            }
-          }
-        });
-      } else {
-        // Optimistic: reflect decrement instantly on menu card.
-        display.textContent = qty;
-        decrementCartByItem(itemId).then(data => {
-          if (!(data && data.ok)) {
-            display.textContent = previousQty;
-          }
-        });
-      }
+      const cardBody = e.target.closest('.menu-card__body');
+      if (!cardBody) return;
+
+      const item = getMenuItemFromCard(cardBody);
+      if (item) openItemModal(item);
     });
   }
 

@@ -48,28 +48,10 @@
           <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
         </div>
         <button type="submit" class="btn-primary-wtf">LOGIN →</button>
-
-        <!-- {% if otp_sent %}
-        <input type="hidden" name="otp_sent" value="True">
-        <div style="margin-bottom:1.5rem;">
-          <label class="form-label">Enter OTP</label>
-          <input type="password" name="otp" class="form-control" placeholder="Enter OTP sent to your mobile"
-            maxlength="6" minlength="4" pattern="[0-9]*" inputmode="numeric" autofocus required>
+        <div style="text-align:right;margin-top:0.5rem;">
+          <a href="{% url 'forgot_password' %}" style="font-size:0.82rem;color:#C0392B;font-weight:700;">Forgot
+            Password?</a>
         </div>
-        <button type="submit" name="auth_action" value="verify" class="btn-primary-wtf">VERIFY OTP →</button>
-        <div style="margin-top:0.75rem;">
-          <small style="color:#6c757d;font-size:0.78rem;">
-            Didn't receive?
-            <button type="submit" name="auth_action" value="resend" formnovalidate
-              style="background:none;border:none;color:#C0392B;font-weight:700;cursor:pointer;padding:0;font-family:inherit;font-size:inherit;">
-              Resend OTP
-            </button>
-          </small>
-        </div>
-        {% else %}
-        <button type="submit" name="auth_action" value="send" class="btn-primary-wtf">SEND OTP →</button>
-        {% endif %} -->
-
       </form>
     </div>
 
