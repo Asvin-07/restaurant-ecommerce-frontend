@@ -3,8 +3,8 @@
 {% block content %}
 <div class="container-wtf page-section" style="max-width:600px;padding-top:1rem;">
     <a href="{% url 'profile' %}"
-        style="font-weight:700;font-size:0.9rem;color:#C0392B;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;">←
-        Profile</a>
+        style="font-weight:700;font-size:0.9rem;color:#C0392B;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;">← Profile
+    </a>
     <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">⭐ Loyalty Points</h2>
 
     <!-- Points Balance Card -->
@@ -13,8 +13,7 @@
         <div
             style="font-size:0.85rem;font-weight:700;opacity:0.85;margin-bottom:0.5rem;letter-spacing:1px;text-transform:uppercase;">
             Your Balance</div>
-        <div style="font-size:3.5rem;font-weight:900;font-family:'Playfair Display',serif;line-height:1;">{{
-            loyalty_points.points|default:0 }}</div>
+        <div style="font-size:3.5rem;font-weight:900;font-family:'Playfair Display',serif;line-height:1;">{{ loyalty_points.points|default:0 }}</div>
         <div style="font-size:1rem;opacity:0.85;margin-top:0.3rem;">Points</div>
         {% if loyalty_points.value %}
         <div
@@ -31,8 +30,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
                 <div style="font-size:1.5rem;font-weight:900;color:#2e7d32;">{{ redeem_balance.points }} Points</div>
-                {% if redeem_balance.value %}<div style="color:#6c757d;font-size:0.85rem;">= ₹{{
-                    redeem_balance.value|floatformat:0 }} discount</div>{% endif %}
+                {% if redeem_balance.value %}<div style="color:#6c757d;font-size:0.85rem;">= ₹{{ redeem_balance.value|floatformat:0 }} discount</div>{% endif %}
             </div>
             <a href="{% url 'checkout' %}" class="btn-primary-wtf"
                 style="width:auto;padding:0.6rem 1.2rem;text-decoration:none;font-size:0.88rem;">Use at Checkout →</a>
@@ -44,8 +42,7 @@
     {% if loyalty_program %}
     <div class="checkout-card">
         <h5>How It Works</h5>
-        {% if loyalty_program.Description %}<p style="color:#6c757d;line-height:1.7;font-size:0.9rem;">{{
-            loyalty_program.Description }}</p>{% endif %}
+        {% if loyalty_program.Description %}<p style="color:#6c757d;line-height:1.7;font-size:0.9rem;">{{ loyalty_program.Description }}</p>{% endif %}
         {% if loyalty_program.PointsPerOrder %}<div class="summary-line"><span>Points per order</span><span
                 style="font-weight:800;">{{ loyalty_program.PointsPerOrder }}</span></div>{% endif %}
         {% if loyalty_program.MinimumRedeemPoints %}<div class="summary-line"><span>Minimum to redeem</span><span

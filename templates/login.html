@@ -38,9 +38,7 @@
 
         <div style="margin-bottom:1rem;">
           <label class="form-label">Mobile Number</label>
-          <input type="tel" name="phone" class="form-control" placeholder="Enter your 10-digit mobile number"
-            value="{{ phone|default:'' }}" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric"
-            required {% if otp_sent %}readonly{% endif %}oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          <input type="tel" name="phone" class="form-control" placeholder="Enter your 10-digit mobile number" value="{{ phone|default:'' }}" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" required {% if otp_sent %}readonly{% endif %}oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         </div>
 
         <div style="margin-bottom:1.5rem;">
@@ -49,8 +47,7 @@
         </div>
         <button type="submit" class="btn-primary-wtf">LOGIN →</button>
         <div style="text-align:right;margin-top:0.5rem;">
-          <a href="{% url 'forgot_password' %}" style="font-size:0.82rem;color:#C0392B;font-weight:700;">Forgot
-            Password?</a>
+          <a href="{% url 'forgot_password' %}" style="font-size:0.82rem;color:#C0392B;font-weight:700;">Forgot Password?</a>
         </div>
       </form>
     </div>

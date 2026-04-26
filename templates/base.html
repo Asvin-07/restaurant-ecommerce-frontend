@@ -112,14 +112,10 @@
     {% block content %}{% endblock %}
   </main>
 
-  {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and
-  request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' and
-  request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
+  {% if request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'checkout' and request.resolver_match.url_name != 'payment_return' and request.resolver_match.url_name != 'order_confirmation' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
   <a href="{% url 'cart' %}" class="cart-badge-btn floating-cart-btn" aria-label="Open cart">
-    🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else
-      %}0 Items{% endif %}</span>
-    <span class="badge-count cart-badge-count" {% if not cart_count %}style="display:none;" {% endif
-      %}>{{cart_count|default:0 }}</span>
+    🛒 <span class="cart-count-text">{% if cart_count %}{{ cart_count }} Item{% if cart_count != 1 %}s{% endif %}{% else %}0 Items{% endif %}</span>
+    <span class="badge-count cart-badge-count" {% if not cart_count %}style="display:none;" {% endif %}>{{cart_count|default:0 }}</span>
   </a>
   {% endif %}
 
@@ -143,8 +139,7 @@
       <div style="text-align:center; margin-bottom:1.5rem;">
         <div style="font-size:3rem; margin-bottom:0.5rem;">📍</div>
         <h3 style="font-family:'Playfair Display',serif; font-weight:900; margin:0 0 0.4rem;">What's your location?</h3>
-        <p style="color:#6c757d; font-size:0.88rem; margin:0;">We need your location to show relevant menu items and
-          delivery availability.</p>
+        <p style="color:#6c757d; font-size:0.88rem; margin:0;">We need your location to show relevant menu items and delivery availability.</p>
       </div>
 
       <button id="btn-detect-location" onclick="detectLocation()"
@@ -181,5 +176,4 @@
   <script src="{% static 'js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
-
 </html>

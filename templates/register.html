@@ -40,20 +40,17 @@
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Mobile Number</label>
-          <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number"
-            value="{{ form_data.phone|default:'' }}" maxlength="15" required>
+          <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number" value="{{ form_data.phone|default:'' }}" maxlength="15" required>
         </div>
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Email Address</label>
-          <input type="email" name="email" class="form-control" placeholder="you@example.com"
-            value="{{ form_data.email|default:'' }}" required>
+          <input type="email" name="email" class="form-control" placeholder="you@example.com" value="{{ form_data.email|default:'' }}" required>
         </div>
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required
-            minlength="6">
+          <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required minlength="6">
         </div>
 
         <div style="margin-bottom:1.5rem;">

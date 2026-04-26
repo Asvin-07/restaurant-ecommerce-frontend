@@ -9,8 +9,7 @@
         <a href="{% url 'offer_detail' offer.id %}" style="text-decoration:none;color:inherit;">
             <div class="menu-card" style="cursor:pointer;">
                 {% if offer.image %}
-                <img src="{{ offer.image }}" alt="{{ offer.title }}" class="menu-card__img"
-                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <img src="{{ offer.image }}" alt="{{ offer.title }}" class="menu-card__img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                 {% endif %}
                 <div class="menu-card__img-placeholder" {% if offer.image %}style="display:none;" {% endif %}
                     style="font-size:3rem;">🎁</div>
@@ -24,10 +23,8 @@
                     {% endif %}
                     <p class="menu-card__desc">{{ offer.description|default:""|truncatechars:80 }}</p>
                     <div class="menu-card__footer">
-                        {% if offer.discount %}<span style="color:#2e7d32;font-weight:900;font-size:1rem;">{{
-                            offer.discount }}% OFF</span>{% endif %}
-                        {% if offer.valid_till %}<span style="font-size:0.78rem;color:#6c757d;">Valid till {{
-                            offer.valid_till }}</span>{% endif %}
+                        {% if offer.discount %}<span style="color:#2e7d32;font-weight:900;font-size:1rem;">{{ offer.discount }}% OFF</span>{% endif %}
+                        {% if offer.valid_till %}<span style="font-size:0.78rem;color:#6c757d;">Valid till {{ offer.valid_till }}</span>{% endif %}
                     </div>
                 </div>
             </div>
@@ -40,8 +37,8 @@
         <h4>No offers right now</h4>
         <p style="color:#6c757d;">Check back soon for great deals!</p>
         <a href="{% url 'menu' %}" class="btn-primary-wtf"
-            style="display:inline-block;width:auto;padding:0.7rem 2rem;text-decoration:none;margin-top:1rem;">Browse
-            Menu →</a>
+            style="display:inline-block;width:auto;padding:0.7rem 2rem;text-decoration:none;margin-top:1rem;">Browse Menu →
+        </a>
     </div>
     {% endif %}
 </div>

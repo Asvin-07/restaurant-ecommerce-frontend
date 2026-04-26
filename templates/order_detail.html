@@ -87,29 +87,9 @@
 {% block extra_js %}
 <script>
   let selectedRating = 0;
-  function setRating(val) {
-    selectedRating = val;
-    document.querySelectorAll('.star-btn').forEach((btn, idx) => {
-      btn.textContent = idx < val ? '★' : '☆';
-      btn.style.color = idx < val ? '#E67E22' : '';
-    });
-  }
-  function submitRating(orderId) {
-    if (!selectedRating) { alert('Please select a rating.'); return; }
-    const review = document.getElementById('rating-review').value;
-    fetch(`/orders/${orderId}/rate/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-      body: JSON.stringify({ rating: selectedRating, review: review })
-    }).then(r => r.json()).then(data => {
-      const section = document.getElementById('rating-section');
-      if (data.ok) {
-        section.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#2e7d32;font-weight:700;">⭐ Thank you for your feedback!</div>';
-      } else {
-        alert(data.error || 'Could not submit rating.');
-      }
-    }).catch(() => alert('Connection error.'));
-  }
+  function setRating(val) { selectedRating = val; document.querySelectorAll('.star-btn').forEach((btn, idx) => { btn.textContent = idx < val ? '★' : '☆'; btn.style.color = idx < val ? '#E67E22' : ''; }); }
+  function submitRating(orderId) { if (!selectedRating) { alert('Please select a rating.'); return; }
+    const review = document.getElementById('rating-review').value; fetch(`/orders/${orderId}/rate/`, {method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() }, body: JSON.stringify({ rating: selectedRating, review: review }) }).then(r => r.json()).then(data => { const section = document.getElementById('rating-section'); if (data.ok) { section.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#2e7d32;font-weight:700;">⭐ Thank you for your feedback!</div>'; } else { alert(data.error || 'Could not submit rating.'); } }).catch(() => alert('Connection error.')); }
 </script>
 {% endblock %}
 {% endblock %}

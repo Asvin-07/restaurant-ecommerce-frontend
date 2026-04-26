@@ -13,17 +13,14 @@
         <div
             style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem;">
             <div>
-                <div style="font-weight:900;font-size:1rem;">Order #{{
-                    order.CustomerOrderID|default:order.OrderNumber|default:"—" }}</div>
-                <div style="font-size:0.82rem;color:#6c757d;margin-top:0.2rem;">{{ order.OrderDate|default:"" }} {{
-                    order.OrderTime|default:"" }}</div>
+                <div style="font-weight:900;font-size:1rem;">Order #{{ order.CustomerOrderID|default:order.OrderNumber|default:"—" }}</div>
+                <div style="font-size:0.82rem;color:#6c757d;margin-top:0.2rem;">{{ order.OrderDate|default:"" }} {{ order.OrderTime|default:"" }}</div>
             </div>
             <span class="status-badge status-preparing">{{ order.OrderStatus|default:"In Progress" }}</span>
         </div>
         {% if order.TrackingURL %}
         <a href="{{ order.TrackingURL }}" target="_blank" class="btn-primary-wtf"
-            style="display:inline-block;width:auto;padding:0.6rem 1.2rem;text-decoration:none;font-size:0.88rem;margin-top:0.5rem;">
-            📍 Track Order
+            style="display:inline-block;width:auto;padding:0.6rem 1.2rem;text-decoration:none;font-size:0.88rem;margin-top:0.5rem;"> 📍 Track Order
         </a>
         {% endif %}
         <div style="font-weight:900;color:#C0392B;margin-top:0.5rem;">₹{{ order.TotalValue|default:"0"|floatformat:0 }}
@@ -36,8 +33,8 @@
         <h4>No active orders</h4>
         <p style="color:#6c757d;">All caught up! No orders in progress right now.</p>
         <a href="{% url 'menu' %}" class="btn-primary-wtf"
-            style="display:inline-block;width:auto;padding:0.7rem 2rem;text-decoration:none;margin-top:1rem;">Order Now
-            →</a>
+            style="display:inline-block;width:auto;padding:0.7rem 2rem;text-decoration:none;margin-top:1rem;">Order Now →
+        </a>
     </div>
     {% endif %}
 </div>

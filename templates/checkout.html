@@ -8,8 +8,7 @@
   <!-- Location warning - only shows if location not set -->
   <div id="checkout-location-warning"
     style="display:none; background:#fdecea; border:2px solid #C0392B; border-radius:10px; padding:1rem; margin-bottom:1.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
-    <span style="font-size:0.9rem; color:#C0392B; font-weight:700;">📍 Please set your delivery location before placing
-      the order.</span>
+    <span style="font-size:0.9rem; color:#C0392B; font-weight:700;">📍 Please set your delivery location before placing the order.</span>
     <button onclick="showLocationPopup()"
       style="background:#C0392B; color:white; border:none; border-radius:8px; padding:0.4rem 1rem; font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer;">
       Set Now
@@ -27,23 +26,19 @@
           <h5>📍 Delivery Address</h5>
           <div style="margin-bottom:1rem;">
             <label class="form-label">Full Delivery Address *</label>
-            <textarea name="delivery_address" class="form-control" rows="3"
-              placeholder="House/Flat No., Street, Area, City, PIN code..."
-              required>{% if user.default_address %}{{ user.default_address }}{% endif %}</textarea>
+            <textarea name="delivery_address" class="form-control" rows="3" placeholder="House/Flat No., Street, Area, City, PIN code..." required>{% if user.default_address %}{{ user.default_address }}{% endif %}</textarea>
           </div>
           <div>
             <label class="form-label">Special Note <span
                 style="font-weight:400;color:#6c757d;">(optional)</span></label>
-            <textarea name="special_note" class="form-control" rows="2"
-              placeholder="e.g. Deliver to ground floor, ring bell twice..."></textarea>
+            <textarea name="special_note" class="form-control" rows="2" placeholder="e.g. Deliver to ground floor, ring bell twice..."></textarea>
           </div>
         </div>
 
         <!-- Payment Info -->
         <div class="checkout-card">
           <h5>💳 Payment Method</h5>
-          <p style="color:#6c757d;font-size:0.9rem;margin-bottom:0.75rem;">You will be redirected to our secure payment
-            gateway after placing the order. We support:</p>
+          <p style="color:#6c757d;font-size:0.9rem;margin-bottom:0.75rem;">You will be redirected to our secure payment gateway after placing the order. We support:</p>
           <div class="payment-icons">
             <span class="payment-icon">UPI</span>
             <span class="payment-icon">Credit Card</span>
@@ -100,21 +95,13 @@
           ← Edit Cart
         </a>
       </div>
-
     </div>
   </form>
 </div>
 
 {% block extra_js %}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const savedLocation = sessionStorage.getItem('wtf_user_location');
-    const warning = document.getElementById('checkout-location-warning');
-    if (!savedLocation && warning) {
-      warning.style.display = 'flex';
-    }
-  });
+  document.addEventListener('DOMContentLoaded', function () { const savedLocation = sessionStorage.getItem('wtf_user_location'); const warning = document.getElementById('checkout-location-warning'); if (!savedLocation && warning) { warning.style.display = 'flex'; } });
 </script>
 {% endblock %}
-
 {% endblock content %}

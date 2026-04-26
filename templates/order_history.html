@@ -29,11 +29,9 @@
           {{ order.item_count|default:"" }} item{% if order.item_count != 1 %}s{% endif %}
           {% endif %}
         </div>
-        <div style="font-weight:900;color:#C0392B;font-size:1rem;">₹{{
-          order.total_amount|floatformat:0|default:order.total|floatformat:0 }}
-          <a href="{% url 'reorder' order.id|default:order.order_id %}"
-            onclick="return confirm('Add items from this order to your cart?')" class="btn-secondary-wtf"
-            style="display:inline-block;text-decoration:none;font-size:0.78rem;padding:0.3rem 0.8rem;margin-top:0.25rem;">🔄 Reorder</a>
+        <div style="font-weight:900;color:#C0392B;font-size:1rem;">₹{{ order.total_amount|floatformat:0|default:order.total|floatformat:0 }}
+          <a href="{% url 'reorder' order.id|default:order.order_id %}" onclick="return confirm('Add items from this order to your cart?')" class="btn-secondary-wtf" style="display:inline-block;text-decoration:none;font-size:0.78rem;padding:0.3rem 0.8rem;margin-top:0.25rem;">🔄 Reorder
+          </a>
         </div>
       </div>
     </div>

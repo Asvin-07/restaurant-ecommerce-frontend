@@ -83,8 +83,7 @@
 
   {% if search_query %}
   <p style="margin-bottom:0.5rem;color:#6c757d;font-weight:600;">
-    Showing results for "<strong>{{ search_query }}</strong>"
-    {% if menu_items %} - {{ menu_items|length }} item{% if menu_items|length != 1 %}s{% endif %} found{% endif %}
+    Showing results for "<strong>{{ search_query }}</strong>" {% if menu_items %} - {{ menu_items|length }} item{% if menu_items|length != 1 %}s{% endif %} found{% endif %}
   </p>
   {% endif %}
 
@@ -95,8 +94,7 @@
 
       <!-- Image -->
       {% if item.image %}
-      <img src="{{ item.image }}" alt="{{ item.name }}" class="menu-card__img" loading="lazy"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <img src="{{ item.image }}" alt="{{ item.name }}" class="menu-card__img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       {% endif %}
       {% if item.image %}
       <div class="menu-card__img-placeholder" style="display:none;">🍽️</div>
@@ -162,7 +160,6 @@
           {% if item.review_count %}({{ item.review_count }}){% endif %}
         </div>
         {% endif %}
-
       </div>
     </div>
     {% endfor %}
@@ -185,7 +182,6 @@
     </p>
   </div>
   {% endif %}
-
 </div>
 <!-- Item Detail Modal -->
 <div id="item-modal-overlay" class="item-modal-overlay">
