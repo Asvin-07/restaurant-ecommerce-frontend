@@ -27,23 +27,23 @@
 </div>
 
 {% if banners %}
-<div style="background:white;border-bottom:1px solid #e9e0d8;padding:0.75rem 0;overflow:hidden;">
-  <div class="container-wtf">
-    <div
-      style="display:flex;gap:1rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;">
-      {% for banner in banners %}
-      {% if banner.image %}
-      <img src="{{ banner.image }}" alt="{{ banner.title }}"
-        style="height:80px;border-radius:8px;flex-shrink:0;object-fit:cover;" onerror="this.style.display='none'">
-      {% elif banner.title %}
-      <div
-        style="background:linear-gradient(135deg,#C0392B,#E67E22);border-radius:8px;padding:0.5rem 1.2rem;flex-shrink:0;display:flex;align-items:center;color:white;font-weight:700;font-size:0.85rem;white-space:nowrap;">
-        🎉 {{ banner.title }}
-      </div>
-      {% endif %}
-      {% endfor %}
+<div style="display:flex;justify-content:center;margin-bottom:1.5rem;">
+    <div class="banner-slider" style="position:relative;overflow:hidden;border-radius:16px;width:300px;">
+        {% for banner in banners %}
+        <div class="banner-slide" style="display:{% if forloop.first %}block{% else %}none{% endif %};">
+            <img src="{{ banner.image }}" alt="Offer"
+                style="width:100%;height:auto;border-radius:16px;display:block;"
+                onerror="this.parentElement.style.display='none'">
+        </div>
+        {% endfor %}
+        {% if banners|length > 1 %}
+        <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;">
+            {% for banner in banners %}
+            <span class="banner-dot" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,{% if forloop.first %}1{% else %}0.5{% endif %});cursor:pointer;transition:all 0.3s;display:inline-block;"></span>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
-  </div>
 </div>
 {% endif %}
 

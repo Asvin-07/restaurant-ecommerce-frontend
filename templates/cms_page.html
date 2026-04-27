@@ -12,7 +12,7 @@
     {% if page %}
     <div class="checkout-card">
         <h2 style="font-family:'Playfair Display',serif;font-weight:900;margin-bottom:1.5rem;">{{ page.title }}</h2>
-        <div style="color:#6c757d;line-height:1.8;">{{ page.content }}</div>
+        <div style="color:#6c757d;line-height:1.8;">{{ page.content|safe }}</div>
     </div>
     {% else %}
     <div class="empty-state"><span class="icon">📄</span>

@@ -813,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+  initBannerSlider();
 });
 
 // --- Location Feature ----
@@ -1017,4 +1018,24 @@ if (pillsContainer) {
   }, true);
 
   pillsContainer.style.cursor = 'grab';
+}
+
+// Banner Slideshow
+function initBannerSlider() {
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.banner-dot');
+    if (slides.length <= 1) return;
+
+    let current = 0;
+
+    function goTo(index) {
+        slides[current].style.display = 'none';
+        dots[current].style.background = 'rgba(255,255,255,0.5)';
+        current = index;
+        slides[current].style.display = 'block';
+        dots[current].style.background = 'rgba(255,255,255,1)';
+    }
+
+    dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+    setInterval(() => goTo((current + 1) % slides.length), 10000);
 }

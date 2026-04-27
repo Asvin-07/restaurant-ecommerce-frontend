@@ -33,6 +33,52 @@ def _build_image_url(raw_image):
 
 # ---- RESPONSE MAPPERS - Convert Lazzatt field names to internal format ------
 
+def _map_banner(item):
+    return {
+        "id":    item.get("BannerId"),
+        "image": _build_image_url(item.get("BannerImage", "")),
+        "link":  "#"
+    }
+
+def _map_offer(item):
+    return {
+        "id":      item.get("OfferID"),
+        "image":   _build_image_url(item.get("OfferImage", "")),
+        "title":   item.get("OfferTitle", ""),
+        "content": item.get("OfferContent", "")
+    }
+
+def _map_live_order(item):
+    tracking = item.get("TrackingURL")
+    return {
+        "id":           item.get("CustomerOrderID"),
+        "order_number": item.get("OrderNumber"),
+        "tracking_url": tracking if tracking and tracking != "NA" else None,
+        "amount":       float(item.get("OrderAmount", 0)),
+    }
+
+def _map_redeem_balance(data):
+    return {
+        "balance":        data.get("BalanceRedeem", 0),
+        "max_redeemable": data.get("MaxRedeemablePoints", 0)
+    }
+
+def _map_loyalty_program(data):
+    return {
+        "title":      data.get("HeaderTitle", ""),
+        "info_title": data.get("InfoTitle", ""),
+        "conditions": data.get("UseConditions", ""),
+        "tiers": [
+            {
+                "type":    tier.get("CustomerType"),
+                "title":   tier.get("Title"),
+                "image":   _build_image_url(tier.get("BannerImage", "")),
+                "details": tier.get("ProgramDetail", "")
+            }
+            for tier in data.get("Data", [])
+        ]
+    }
+
 def _map_product(item):
     return {
         "id":            str(item.get("ProductId", "")),
@@ -322,16 +368,14 @@ def get_menu_items(token=None, category_id=None, search=None): # reserved for fu
 
     # Build payload - if category selected, use GetPagerProduct for that type
     if category_id:
-        result = _post(f"{API_BASE}/Api/GetPagerProduct", {
-            "VeganType": 0,
-            "CuisineType": 1,
-            "PageSize": 100,
-            "PageNumber": 1,
-            "ProductTypeId": int(category_id)
+        # All category pills from GetProductType use IntrestStatus
+        result = _post(f"{API_BASE}/Api/GetProductList", {
+            "IntrestStatus": int(category_id),
+            "CustomerId":    0
         })
     else:
         result = _post(f"{API_BASE}/Api/GetProduct", {
-            "VeganType": "0",
+            "VeganType":  "0",
             "CuisineType": "1"
         })
 
@@ -375,51 +419,24 @@ def get_menu_item_detail(item_id, token=None): # reserved for future personalize
     return {"ok": False, "error": "Item not found."}
 
 def get_all_banners():
-    """
-    Fetch promotional banners for homepage.
-    ⚠ BACKEND NOTE: Field names in response unknown — using multiple fallbacks.
-    Ask backend: BannerImage, BannerTitle, BannerLink field names?
-    """
     result = _post(f"{API_BASE}/Api/GetAllBanner", {})
     if not result["ok"]:
         return {"ok": True, "data": []}
     data = result["data"]
     if isinstance(data, list):
-        banners = []
-        for b in data:
-            img = b.get("BannerImage", b.get("Image", b.get("ImagePath", "")))
-            banners.append({
-                "id":    str(b.get("BannerID", b.get("BannerId", b.get("Id", "")))),
-                "title": b.get("BannerTitle", b.get("Title", b.get("Name", ""))),
-                "image": _build_image_url(img) if img else "",
-                "link":  b.get("BannerLink", b.get("Link", "")),
-            })
-        return {"ok": True, "data": banners}
+        return {"ok": True, "data": [_map_banner(b) for b in data]}
     return {"ok": True, "data": []}
 
 def get_all_offers():
-    """Fetch all active offers/promotions."""
     result = _post(f"{API_BASE}/Api/GetAllOffer", {})
     if not result["ok"]:
         return {"ok": True, "data": []}
     data = result["data"]
     if isinstance(data, list):
-        return {"ok": True, "data": [
-            {
-                "id":          str(o.get("OfferID", o.get("OfferId", o.get("offerID", "")))),
-                "title":       o.get("OfferTitle", o.get("Title", o.get("Name", ""))),
-                "description": o.get("OfferDescription", o.get("Description", "")),
-                "image":       _build_image_url(o.get("OfferImage", o.get("Image", ""))),
-                "code":        o.get("OfferCode", o.get("Code", "")),
-                "discount":    o.get("Discount", o.get("DiscountValue", 0)),
-                "valid_till":  o.get("ValidTill", o.get("ExpiryDate", "")),
-            }
-            for o in data
-        ]}
+        return {"ok": True, "data": [_map_offer(o) for o in data]}
     return {"ok": True, "data": []}
 
 def get_offer_detail(offer_id):
-    """Fetch detailed info for a single offer."""
     result = _post(f"{API_BASE}/Api/OfferDetail", {
         "offerID": int(offer_id)
     })
@@ -427,71 +444,53 @@ def get_offer_detail(offer_id):
         return result
     data = result["data"]
     if isinstance(data, dict):
-        return {"ok": True, "data": {
-            "id":          str(data.get("OfferID", offer_id)),
-            "title":       data.get("OfferTitle", data.get("Title", "")),
-            "description": data.get("OfferDescription", data.get("Description", "")),
-            "image":       _build_image_url(data.get("OfferImage", data.get("Image", ""))),
-            "code":        data.get("OfferCode", data.get("Code", "")),
-            "discount":    data.get("Discount", 0),
-            "valid_till":  data.get("ValidTill", ""),
-            "terms":       data.get("Terms", data.get("TermsConditions", "")),
-        }}
+        return {"ok": True, "data": _map_offer(data)}
+    if isinstance(data, list) and data:
+        return {"ok": True, "data": _map_offer(data[0])}
     return {"ok": False, "error": "Offer not found."}
 
 def get_loyalty_program():
-    """Fetch loyalty program rules and description."""
     result = _post(f"{API_BASE}/Api/GetLoyaltyProgram", {})
     if not result["ok"]:
         return {"ok": True, "data": {}}
     data = result["data"]
     if isinstance(data, dict):
-        return {"ok": True, "data": data}
+        return {"ok": True, "data": _map_loyalty_program(data)}
     if isinstance(data, list) and data:
-        return {"ok": True, "data": data[0]}
+        return {"ok": True, "data": _map_loyalty_program(data[0])}
     return {"ok": True, "data": {}}
 
 def get_loyalty_points(token):
-    """Fetch customer's current loyalty point balance."""
     if not token or token.startswith("guest-"):
-        return {"ok": True, "data": {"points": 0, "value": 0}}
+        return {"ok": True, "data": {"balance": 0}}
     result = _post(f"{API_BASE}/Api/GetLoyaltyPoint", {
         "CustomerID": int(token)
     })
     if not result["ok"]:
-        return {"ok": True, "data": {"points": 0, "value": 0}}
+        return {"ok": True, "data": {"balance": 0}}
     data = result["data"]
     if isinstance(data, dict):
-        points = data.get("LoyaltyPoint", data.get("Points", data.get("TotalPoints", 0)))
-        value  = data.get("PointValue",   data.get("Value", 0))
-        return {"ok": True, "data": {"points": points, "value": value}}
+        return {"ok": True, "data": {
+            "balance": data.get("LoyaltyPoint", data.get("Points", 0))
+        }}
     if isinstance(data, list) and data:
-        first  = data[0]
-        points = first.get("LoyaltyPoint", first.get("Points", 0))
-        value  = first.get("PointValue",   0)
-        return {"ok": True, "data": {"points": points, "value": value}}
-    return {"ok": True, "data": {"points": 0, "value": 0}}
+        return {"ok": True, "data": {
+            "balance": data[0].get("LoyaltyPoint", 0)
+        }}
+    return {"ok": True, "data": {"balance": 0}}
 
 def get_redeem_balance(token):
-    """
-    Fetch how many points can be redeemed and their monetary value.
-    ⚠ BACKEND NOTE: Unclear if IsRedeemPoint=true in OrderPlaced
-    automatically deducts or needs a separate step. Confirm with backend.
-    """
     if not token or token.startswith("guest-"):
-        return {"ok": True, "data": {"points": 0, "value": 0}}
+        return {"ok": True, "data": {"balance": 0, "max_redeemable": 0}}
     result = _post(f"{API_BASE}/Api/BalanceRedeemPoint", {
         "CustomerId": int(token)
     })
     if not result["ok"]:
-        return {"ok": True, "data": {"points": 0, "value": 0}}
+        return {"ok": True, "data": {"balance": 0, "max_redeemable": 0}}
     data = result["data"]
     if isinstance(data, dict):
-        return {"ok": True, "data": {
-            "points": data.get("RedeemPoint", data.get("Points", data.get("Balance", 0))),
-            "value":  data.get("RedeemValue", data.get("Value",  data.get("Amount", 0))),
-        }}
-    return {"ok": True, "data": {"points": 0, "value": 0}}
+        return {"ok": True, "data": _map_redeem_balance(data)}
+    return {"ok": True, "data": {"balance": 0, "max_redeemable": 0}}
 
 def submit_order_rating(token, order_id, rating, review=""):
     """
@@ -738,7 +737,7 @@ def place_order(token, delivery_address, special_note="", redeem_points=False):
     result = _post(f"{API_BASE}/Api/OrderPlaced", {
         "CustomerId":           int(token),
         "AddressID":            address_id,
-        "PaymentMethod":        2,          # 2 = Online payment
+        "PaymentMethod":        1,          # 1 = Cash on Delivery, 2 = Online payment
         "OrderType":            1,          # 1 = Delivery
         "IsRedeemPoint":        redeem_points,
         "Remarks":              special_note,
@@ -812,7 +811,6 @@ def reorder(token):
     })
 
 def get_live_orders(token):
-    """Fetch active in-progress orders for live tracking."""
     if not token or token.startswith("guest-"):
         return {"ok": True, "data": []}
     result = _post(f"{API_BASE}/Api/GetLiveOrders", {
@@ -822,9 +820,9 @@ def get_live_orders(token):
         return {"ok": True, "data": []}
     data = result["data"]
     if isinstance(data, list):
-        return {"ok": True, "data": data}
+        return {"ok": True, "data": [_map_live_order(o) for o in data]}
     if isinstance(data, dict):
-        return {"ok": True, "data": [data]}
+        return {"ok": True, "data": [_map_live_order(data)]}
     return {"ok": True, "data": []}
 
 # ---- Payment ----

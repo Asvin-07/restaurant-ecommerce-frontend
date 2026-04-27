@@ -13,43 +13,71 @@
         <div
             style="font-size:0.85rem;font-weight:700;opacity:0.85;margin-bottom:0.5rem;letter-spacing:1px;text-transform:uppercase;">
             Your Balance</div>
-        <div style="font-size:3.5rem;font-weight:900;font-family:'Playfair Display',serif;line-height:1;">{{ loyalty_points.points|default:0 }}</div>
+        <div style="font-size:3.5rem;font-weight:900;font-family:'Playfair Display',serif;line-height:1;">{{ loyalty_points.balance|default:0 }}</div>
         <div style="font-size:1rem;opacity:0.85;margin-top:0.3rem;">Points</div>
         {% if loyalty_points.value %}
-        <div
-            style="margin-top:1rem;background:rgba(255,255,255,0.2);border-radius:50px;padding:0.4rem 1.2rem;display:inline-block;font-size:0.88rem;font-weight:700;">
-            Worth ₹{{ loyalty_points.value|floatformat:0 }}
-        </div>
         {% endif %}
     </div>
 
     <!-- Redeemable Balance -->
-    {% if redeem_balance.points %}
-    <div class="checkout-card" style="background:#e8f5e9;border-color:#2e7d32;margin-bottom:1.5rem;">
-        <h5 style="color:#2e7d32;">✅ Redeemable Now</h5>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <div style="font-size:1.5rem;font-weight:900;color:#2e7d32;">{{ redeem_balance.points }} Points</div>
-                {% if redeem_balance.value %}<div style="color:#6c757d;font-size:0.85rem;">= ₹{{ redeem_balance.value|floatformat:0 }} discount</div>{% endif %}
+    {% if redeem_balance.balance %}
+<div class="checkout-card" style="background:#e8f5e9;border-color:#2e7d32;margin-bottom:1.5rem;">
+    <h5 style="color:#2e7d32;">✅ Your Points</h5>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <div style="font-size:1.5rem;font-weight:900;color:#2e7d32;">
+                {{ redeem_balance.balance }} Points
             </div>
-            <a href="{% url 'checkout' %}" class="btn-primary-wtf"
-                style="width:auto;padding:0.6rem 1.2rem;text-decoration:none;font-size:0.88rem;">Use at Checkout →</a>
+            {% if redeem_balance.max_redeemable and redeem_balance.max_redeemable > 0 %}
+            <div style="color:#6c757d;font-size:0.85rem;">
+                ₹{{ redeem_balance.max_redeemable }} redeemable on next order
+            </div>
+            {% else %}
+            <div style="color:#6c757d;font-size:0.85rem;">
+                No points redeemable on current order
+            </div>
+            {% endif %}
         </div>
+        {% if redeem_balance.max_redeemable and redeem_balance.max_redeemable > 0 %}
+        <a href="{% url 'checkout' %}" class="btn-primary-wtf"
+            style="width:auto;padding:0.6rem 1.2rem;text-decoration:none;font-size:0.88rem;">
+            Use at Checkout →
+        </a>
+        {% endif %}
     </div>
-    {% endif %}
+</div>
+{% endif %}
 
     <!-- Program Info -->
     {% if loyalty_program %}
-    <div class="checkout-card">
-        <h5>How It Works</h5>
-        {% if loyalty_program.Description %}<p style="color:#6c757d;line-height:1.7;font-size:0.9rem;">{{ loyalty_program.Description }}</p>{% endif %}
-        {% if loyalty_program.PointsPerOrder %}<div class="summary-line"><span>Points per order</span><span
-                style="font-weight:800;">{{ loyalty_program.PointsPerOrder }}</span></div>{% endif %}
-        {% if loyalty_program.MinimumRedeemPoints %}<div class="summary-line"><span>Minimum to redeem</span><span
-                style="font-weight:800;">{{ loyalty_program.MinimumRedeemPoints }} pts</span></div>{% endif %}
-        {% if loyalty_program.RedeemValue %}<div class="summary-line"><span>1 point value</span><span
-                style="font-weight:800;">₹{{ loyalty_program.RedeemValue }}</span></div>{% endif %}
+<div class="checkout-card" style="margin-bottom:1.5rem;">
+    <h5>{{ loyalty_program.info_title|default:"How It Works" }}</h5>
+    {% if loyalty_program.conditions %}
+    <div style="color:#6c757d;line-height:1.8;font-size:0.9rem;">
+        {{ loyalty_program.conditions|safe }}
     </div>
     {% endif %}
+</div>
+
+{% if loyalty_program.tiers %}
+<h5 style="margin-bottom:1rem;">Membership Tiers</h5>
+{% for tier in loyalty_program.tiers %}
+<div class="checkout-card" style="margin-bottom:1rem;">
+    {% if tier.image %}
+    <img src="{{ tier.image }}" alt="{{ tier.type }}"
+        style="width:100%;border-radius:8px;margin-bottom:0.75rem;max-height:120px;object-fit:cover;"
+        onerror="this.style.display='none'">
+    {% endif %}
+    <h5 style="color:#C0392B;margin-bottom:0.5rem;">{{ tier.type }}</h5>
+    <p style="font-size:0.85rem;color:#6c757d;margin-bottom:0.5rem;">{{ tier.title }}</p>
+    {% if tier.details %}
+    <div style="color:#444;font-size:0.85rem;line-height:1.7;">
+        {{ tier.details|safe }}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+{% endif %}
 </div>
 {% endblock %}

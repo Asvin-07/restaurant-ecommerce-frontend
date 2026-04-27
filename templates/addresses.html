@@ -53,9 +53,9 @@
                     <div>
                         <label class="form-label">Type</label>
                         <select name="address_type" class="form-control">
-                            <option value="Home" {% if address.address_type=='Home' %}selected{% endif %}>Home</option>
-                            <option value="Work" {% if address.address_type=='Work' %}selected{% endif %}>Work</option>
-                            <option value="Other" {% if address.address_type=='Other' %}selected{% endif %}>Other
+                            <option value="Home" {% if address.address_type == 'Home' %}selected{% endif %}>Home</option>
+                            <option value="Work" {% if address.address_type == 'Work' %}selected{% endif %}>Work</option>
+                            <option value="Other" {% if address.address_type == 'Other' %}selected{% endif %}>Other
                             </option>
                         </select>
                     </div>
@@ -90,7 +90,7 @@
                     <label class="form-label">Delivery Area</label>
                     <select name="area_id" class="form-control">
                         {% for area in areas %}
-                        <option value="{{ area.id }}" {% if address.area_id==area.id %}selected{% endif %}>{{ area.name }}</option>
+                        <option value="{{ area.id }}" {% if address.area_id == area.id %}selected{% endif %}>{{ area.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
