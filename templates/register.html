@@ -40,7 +40,7 @@
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Mobile Number</label>
-          <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number" value="{{ form_data.phone|default:'' }}" maxlength="15" required>
+          <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number" pattern="[0-9]{10}" value="{{ form_data.phone|default:'' }}" maxlength="10" required>
         </div>
 
         <div style="margin-bottom:0.9rem;">
@@ -50,12 +50,12 @@
 
         <div style="margin-bottom:0.9rem;">
           <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required minlength="6">
+          <input type="password" name="password" class="form-control" placeholder="Min. 4 characters" required minlength="4">
         </div>
 
         <div style="margin-bottom:1.5rem;">
           <label class="form-label">Confirm Password</label>
-          <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+          <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter password" required minlength="4">
         </div>
 
         <button type="submit" class="btn-primary-wtf">CREATE ACCOUNT →</button>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Order #{{ order.id|default:order.order_id }}{% endblock %}
+{% block title %}Order #{{ order.order_id }}{% endblock %}
 {% block content %}
 <div class="container-wtf page-section" style="max-width:700px;padding-top:1rem;">
   <a href="{% url 'order_history' %}"
@@ -9,7 +9,7 @@
 
   <div
     style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
-    <h2 style="font-family:'Nunito',sans-serif;font-weight:900;margin:0;font-size:1.4rem;">Order #{{ order.id|default:order.order_id }}</h2>
+    <h2 style="font-family:'Nunito',sans-serif;font-weight:900;margin:0;font-size:1.4rem;">Order #{{ order.order_id }}</h2>
     <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
   </div>
 
@@ -60,19 +60,20 @@
   </div>
   {% endif %}
   <!-- Rating Widget — shown for delivered orders -->
-  {% if order.status == "Delivered" or order.status == "delivered" %}
+  
+  {% if order.status | lower == "delivered" %}
   <div class="checkout-card" id="rating-section">
     <h5>⭐ Rate Your Order</h5>
     <p style="color:#6c757d;font-size:0.88rem;margin-bottom:1rem;">How was your experience?</p>
     <div id="star-container" style="display:flex;gap:0.5rem;margin-bottom:1rem;">
-      {% for i in "12345" %}
+      {% for i in range_5 %}
       <button onclick="setRating({{ forloop.counter }})" class="star-btn" data-star="{{ forloop.counter }}"
         style="background:none;border:none;font-size:2rem;cursor:pointer;transition:transform 0.1s;padding:0;">☆</button>
       {% endfor %}
     </div>
     <textarea id="rating-review" class="form-control" rows="2" placeholder="Tell us more (optional)..."
       style="margin-bottom:1rem;"></textarea>
-    <button onclick="submitRating('{{ order.id|default:order.order_id }}')" class="btn-primary-wtf"
+    <button onclick="submitRating('{{ order.order_id }}')" class="btn-primary-wtf"
       style="width:auto;padding:0.6rem 1.5rem;">Submit Rating</button>
   </div>
   {% endif %}

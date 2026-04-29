@@ -605,19 +605,30 @@ def _post_full(url, payload):
         return {"ok": False, "error": "An unexpected error occurred."}
 
 def get_cart(token):
-    """Fetch cart for logged-in user using CustomerID."""
     if not token or token.startswith("guest-"):
-        # Guest users have no server-side cart - return empty
         return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
 
-    result = _post_full(f"{API_BASE}/Api/GetCartList", {
-        "CustomerID": token,
-        "IsRedeemPoint": False
-    })
-    if not result["ok"]:
-        return result
+    # Use _post_full so we get the complete response including Success field
+    headers = {"Content-Type": "application/json"}
+    try:
+        import requests as req
+        resp = req.post(f"{API_BASE}/Api/GetCartList",
+                        json={"CustomerID": token, "IsRedeemPoint": False},
+                        headers=headers, timeout=REQUEST_TIMEOUT)
+        if resp.status_code in (200, 201):
+            data = resp.json()
+            # Empty cart returns Success:false with "No Data Found"
+            # Treat this as a valid empty cart, not an error
+            if not data.get("Success"):
+                msg = data.get("Message", "")
+                if "no data" in msg.lower() or "not found" in msg.lower() or data.get("CartCount", -1) == 0:
+                    return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
+                return {"ok": False, "error": msg}
+            return {"ok": True, "data": _build_cart_from_api(data)}
+    except Exception:
+        pass
 
-    return {"ok": True, "data": _build_cart_from_api(result["data"])}
+    return {"ok": True, "data": {"items": [], "subtotal": 0, "tax": 0, "total": 0}}
 
 def add_to_cart(token, item_id, quantity, special_instructions=""): # Lazzatt API doesn't support special instructions — kept for interface consistency
     """Add item to cart. Requires logged-in user (CustomerID)."""

@@ -126,7 +126,7 @@ def register_view(request):
         if not name:                           errors.append("Full name is required.")
         if not phone or len(phone) < 10:       errors.append("A valid 10-digit phone number is required.")
         if not email or "@" not in email:      errors.append("A valid email address is required.")
-        if len(password) < 6:                  errors.append("Password must be at least 6 characters.")
+        if len(password) < 4:                  errors.append("Password must be at least 4 characters.")
         if password != confirm:                errors.append("Passwords do not match.")
         if errors:
             for err in errors:
@@ -455,11 +455,13 @@ def order_detail_view(request, order_id):
     if not result["ok"]:
         messages.error(request, "Order not found.")
         return redirect("order_history")
-    return render(request, "order_detail.html", {
+    context = {
         "order":      result["data"],
         "cart_count": 0,
         "user":       _get_user(request),
-    })
+    }
+    context['range_5'] = range(1, 6)
+    return render(request, "order_detail.html", context)
 
 @_login_required
 def profile_view(request):
@@ -597,14 +599,17 @@ def addresses_view(request):
     })
 
 @_login_required
-def reorder_view(request, order_id):
-    token = _get_token(request)
-    result = api.reorder(token=token)
-    if result["ok"]:
-        messages.success(request, "Items from your previous order have been added to cart.")
-    else:
-        messages.error(request, result.get("error", "Could not reorder. Please try again."))
-    return redirect("cart")
+def reorder(request):
+    if request.method == "POST":
+        token = _get_token(request)
+        result = api.reorder(token)
+        if result.get("ok"):
+            messages.success(request, "Your previous order has been added to your cart.")
+            return redirect('cart')
+        else:
+            messages.error(request, "Could not reorder. Please try again.")
+            return redirect('orders')
+    return redirect('orders')
 
 @_login_required
 def live_orders_view(request):
