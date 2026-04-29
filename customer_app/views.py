@@ -599,17 +599,17 @@ def addresses_view(request):
     })
 
 @_login_required
-def reorder(request):
-    if request.method == "POST":
-        token = _get_token(request)
-        result = api.reorder(token)
-        if result.get("ok"):
-            messages.success(request, "Your previous order has been added to your cart.")
-            return redirect('cart')
-        else:
-            messages.error(request, "Could not reorder. Please try again.")
-            return redirect('orders')
-    return redirect('orders')
+def reorder(request, order_id):
+    token = _get_token(request)
+
+    result = api.reorder(token, order_id)
+    if result.get("ok"):
+
+        messages.success(request, "Your previous order has been added to your cart.")
+        return redirect('cart')
+    else:
+        messages.error(request, "Could not reorder. Please try again.")
+        return redirect('order_history')
 
 @_login_required
 def live_orders_view(request):

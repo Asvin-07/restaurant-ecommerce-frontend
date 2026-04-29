@@ -808,17 +808,12 @@ def get_order_detail(token, order_id):
 
     return {"ok": False, "error": "Order not found."}
 
-def reorder(token):
-    """
-    Re-add last order items to cart.
-    ⚠ BACKEND NOTE: Postman only shows CustomerID in body.
-    Unclear if this re-orders the LAST order or a specific one.
-    Confirm with backend whether an OrderID/SaleBillID is needed.
-    """
+def reorder(token, order_id):
     if not token or token.startswith("guest-"):
         return {"ok": False, "error": "Please log in."}
+    
     return _post(f"{API_BASE}/Api/Reorder", {
-        "CustomerID": token
+        "CustomerOrderID": int(order_id)
     })
 
 def get_live_orders(token):

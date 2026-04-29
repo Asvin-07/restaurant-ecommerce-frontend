@@ -43,7 +43,7 @@ urlpatterns = [
     path('addresses/', views.addresses_view, name='addresses'),
 
     # Orders extended
-    path('orders/<str:order_id>/reorder/', views.reorder_view, name='reorder'),
+    path('orders/<str:order_id>/reorder/', views.reorder, name='reorder'),
     path('orders/<str:order_id>/rate/', views.submit_rating_view, name='submit_rating'),
 
     # Live orders
